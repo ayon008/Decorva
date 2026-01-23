@@ -37,7 +37,7 @@ body {
 }
 
 .global-margin {
-  @apply mb-[80px] lg:mb-[clamp(7.5rem,-1.3889rem+13.8889vw,12.5rem)];
+  @apply mb-10 lg:mb-20;
 }
 
 .layout {

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 
-import "./globals.css";
+import '../globals.css';
 import { rubik } from "@/Shared/font/Rubik";
 import Footer from "@/Shared/Foooter/footer";
 import NavBar from "@/Shared/Navbar/NavBar";

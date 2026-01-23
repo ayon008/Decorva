@@ -5,6 +5,7 @@ import { Heart, Search, ShoppingBag, User } from 'lucide-react';
 import React, { useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
+import SideCart from '../Cart/SiteCart';
 
 const NavBar = () => {
     const pathname = usePathname();
@@ -14,6 +15,8 @@ const NavBar = () => {
     const handleCategoriesOpen = () => {
         setIsCategoriesOpen(!isCategoriesOpen);
     }
+
+    const [sideCartOpen, setSideCartOpen] = useState<boolean>(false);
 
 
     useGSAP(() => {
@@ -44,9 +47,9 @@ const NavBar = () => {
                             <Search className='cursor-pointer absolute right-4 top-1/2 -translate-y-1/2' type='button' />
                         </div>
                         <div className='flex items-center gap-6 border-r-[#E1E1E1] border-l-[#E1E1E1] border-l border-r p-10 self-stretch'>
-                            <User />
-                            <Heart />
-                            <div className='w-fit h-fit relative'>
+                            <Link href={'/login'}><User className='cursor-pointer' /></Link>
+                            <Heart className='cursor-pointer' />
+                            <div className='w-fit h-fit relative cursor-pointer' onClick={() => setSideCartOpen(!sideCartOpen)}>
                                 <ShoppingBag />
                                 <div className='bg-primary flex items-center justify-center text-white text-[10px] py-1 px-2 rounded-full absolute -top-2 -right-[10px]'>
                                     2
@@ -56,7 +59,7 @@ const NavBar = () => {
                     </div>
                 </div>
             </nav>
-            <div className='sticky top-0 z-[1000] bg-white border-b border-b-[#E1E1E1] w-full'>
+            <div className='sticky top-0 z-[100] bg-white border-b border-b-[#E1E1E1] w-full'>
                 <div className='global-padding layout flex items-stretch justify-between flex-wrap'>
                     <div className='w-1/4 relative flex items-center cursor-pointer' onClick={handleCategoriesOpen}>
                         <div className='flex items-center gap-x-10 flex-1'>
@@ -94,9 +97,6 @@ const NavBar = () => {
                                 <Link href={"/outdoor-plants"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/outdoor-plants" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Outdoor Plants</Link>
                             </li>
                             <li>
-                                <Link href={"/plants-care"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/plants-care" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Plants Care</Link>
-                            </li>
-                            <li>
                                 <Link href={"/blog"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/blog" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Blog</Link>
                             </li>
                             <li>
@@ -115,6 +115,9 @@ const NavBar = () => {
                     </div>
                 </div>
             </div>
+
+
+            <SideCart isOpen={sideCartOpen} onClose={() => setSideCartOpen(!sideCartOpen)} />
         </>
     )
 }
