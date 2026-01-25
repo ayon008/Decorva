@@ -6,6 +6,8 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { LoginFormSchema } from "@/Shared/Schema/LoginSchema";
 import bcrypt from "bcryptjs";
 import { UserRole } from "@prisma/client";
+import Google from "next-auth/providers/google";
+
 
 
 export type ExtendedUSer = DefaultSession["user"] & {
@@ -50,6 +52,10 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
     session: { strategy: "jwt" },
     ...authConfig,
     providers: [
+        Google({
+            clientId: process.env.GOOGLE_CLIENT_ID,
+            clientSecret: process.env.GOOGLE_CLIENT_SECRET
+        }),
         // When some one login with email and password
         // it doesn't generate any token or session
         // check the credentials are valid or not
