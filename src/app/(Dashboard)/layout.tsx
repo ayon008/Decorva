@@ -4,7 +4,7 @@ import '../globals.css';
 import { rubik } from "@/Shared/font/Rubik";
 import { SessionProvider } from "next-auth/react";
 import TanstackProvider from "@/Shared/Providers/TanstackProvider";
-import { ChevronRight, Home, Menu, Package, Package2 } from "lucide-react";
+import { ChevronRight, Home, Menu, Package, Package2, TicketPercent, Truck, Users2 } from "lucide-react";
 import Link from "next/link";
 import Dropdown from "@/Shared/Dropdown/DrowDown";
 
@@ -31,7 +31,7 @@ export default function DashboardLayout({
                             <input type="checkbox" id="sidebar-toggle" className="hidden peer" defaultChecked />
 
                             {/* Sidebar */}
-                            <aside className="w-[250px] bg-primary h-full transition-all duration-300 ease-in-out peer-checked:translate-x-0 -translate-x-full fixed left-0 top-0 z-10">
+                            <aside className="w-[250px] bg-primary h-full transition-all duration-300 ease-in-out peer-checked:translate-x-0 -translate-x-full fixed left-0 top-0 z-10 overflow-y-auto scroll-bar">
                                 <div className="p-4">
                                     <h1 className="global-h2 text-white text-2xl! text-center py-6">Decorva</h1>
                                     <nav className="flex flex-col gap-2 mt-2">
@@ -40,25 +40,114 @@ export default function DashboardLayout({
                                             <span className="text-base leading-[110%]">Home</span>
                                         </Link>
 
-
                                         <Dropdown label="Products" icon={<Package className="w-4 h-4" />} items={[
                                             {
                                                 label: "All Products",
-                                                href: "/products/all",
+                                                href: "/dashboard/products/all",
                                             },
                                             {
                                                 label: "Add Product",
-                                                href: "/products/add",
+                                                href: "/dashboard/products/add",
+                                            },
+                                            {
+                                                label: "Categories",
+                                                href: "/dashboard/products/categories",
+                                            },
+                                            {
+                                                label: "Attributes",
+                                                href: "/dashboard/products/attributes",
+                                            },
+                                            {
+                                                label: "Variations",
+                                                href: "/dashboard/products/variations",
+                                            },
+                                            {
+                                                label: "Inventory",
+                                                href: "/dashboard/products/inventory",
                                             },
                                         ]} />
 
-                                        <Link className=" hover:bg-[#6F9805] text-white p-2 rounded-sm transition-colors duration-200 flex items-center justify-between gap-3" href={'/orders'}>
-                                            <div className="flex items-center gap-3">
-                                                <Package2 className="w-4 h-4" />
-                                                <span className="text-base leading-[110%]">Orders</span>
-                                            </div>
-                                            <ChevronRight className="w-4 h-4" />
-                                        </Link>
+                                        <Dropdown label="Orders" icon={<Package2 className="w-4 h-4" />} items={[
+                                            {
+                                                label: "All Orders",
+                                                href: "/dashboard/orders/all",
+                                            },
+                                            {
+                                                label: "Pending",
+                                                href: "/dashboard/orders/pending",
+                                            },
+                                            {
+                                                label: "Processing",
+                                                href: "/dashboard/orders/processing",
+                                            },
+                                            {
+                                                label: "Shipped",
+                                                href: "/dashboard/orders/shipped",
+                                            },
+                                            {
+                                                label: "Completed",
+                                                href: "/dashboard/orders/completed",
+                                            },
+                                            {
+                                                label: "Cancelled / Returned",
+                                                href: "/dashboard/orders/cancelled",
+                                            },
+                                        ]} />
+
+                                        <Dropdown label="Customers" icon={<Users2 className="w-4 h-4" />} items={[
+                                            {
+                                                label: "All customers",
+                                                href: "/dashboard/customers/all",
+                                            },
+                                            {
+                                                label: "Customer details",
+                                                href: "/dashboard/customers/details",
+                                            },
+                                            {
+                                                label: "Order history",
+                                                href: "/dashboard/orders/history",
+                                            },
+                                            {
+                                                label: "Total spent",
+                                                href: "/dashboard/orders/spent",
+                                            },
+                                            {
+                                                label: "Last order date",
+                                                href: "/dashboard/orders/last-order-date",
+                                            },
+                                        ]} />
+
+                                        <Dropdown label="Coupons" icon={<TicketPercent className="w-4 h-4" />} items={[
+                                            {
+                                                label: "Active coupons",
+                                                href: "/dashboard/coupons/active",
+                                            },
+                                            {
+                                                label: "Expired coupons",
+                                                href: "/dashboard/coupons/expired",
+                                            },
+                                            {
+                                                label: "Create coupon",
+                                                href: "/dashboard/coupons/create",
+                                            },
+                                        ]} />
+
+                                        <Dropdown label="Shipping" icon={<Truck className="w-4 h-4" />} items={[
+                                            {
+                                                label: "Shipping Zones",
+                                                href: "/dashboard/shipping/zones",
+                                            },
+                                            {
+                                                label: "Shipping methods",
+                                                href: "/dashboard/shipping/methods",
+                                            },
+                                            {
+                                                label: "Rates",
+                                                href: "/dashboard/shipping/rates",
+                                            },
+                                        ]} />
+
+
                                     </nav>
                                 </div>
                             </aside>
