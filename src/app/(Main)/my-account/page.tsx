@@ -4,12 +4,13 @@ import React, { useState } from 'react'
 import Orders from '../../../Shared/Orders/Orders';
 import ForgotPass from '@/Shared/ForgotPassword/ForgotPass';
 import Information from '@/Shared/My-Profile/Information';
-import { signOut } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import Swal from 'sweetalert2';
+import { useQuery } from '@tanstack/react-query';
+import { User } from "@prisma/client";
 
 const MyAccountPage = () => {
     const [activeIndex, setActiveIndex] = useState<number>(0);
-
     const handleLogOut = async () => {
         Swal.fire({
             title: 'Logging out...',
@@ -24,7 +25,29 @@ const MyAccountPage = () => {
             callbackUrl: '/'
         });
     }
-    
+
+    const { data: session } = useSession();
+
+    const id = session?.user?.id;
+
+    const { data: user, isLoading } = useQuery({
+        queryKey: ['user', id],
+        queryFn: async () => {
+            const response = await fetch(`/api/user/${id}`);
+            const data = await response.json();
+            if (data.success) {
+                return data.data;
+            }
+            return null;
+        },
+        enabled: !!id
+    });
+
+
+    if (isLoading || !user) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <div>
             <PageTitle title='My Account' subTitle='home / My account' />
@@ -39,7 +62,7 @@ const MyAccountPage = () => {
                         </ul>
                     </div>
                     <div className='flex-1'>
-                        {activeIndex === 0 && <Information />}
+                        {activeIndex === 0 && <Information data={user as User} />}
                         {activeIndex === 1 && <Orders />}
                         {activeIndex === 2 && <ForgotPass />}
                     </div>

@@ -22,15 +22,15 @@ enum UserRole {
 model User {
   id                String           @id @default(auto()) @map("_id") @db.ObjectId
   email             String           @unique
-  password          String
+  password          String?
   firstName         String?
   lastName          String?
   phone             String?
   company           String?
   taxId             String?
   customerNotes     String?
-  isActive          Boolean          @default(true)
-  emailVerified     Boolean          @default(false)
+  isActive          Boolean?          @default(true)
+  emailVerified     Boolean?          @default(false)
   roles             UserRole[]       @default([CUSTOMER])
   billingAddress    BillingAddress?  @relation(fields: [billingAddressId], references: [id])
   billingAddressId  String?          @db.ObjectId @unique
@@ -43,7 +43,7 @@ model User {
   reviews   ProductReview[]
 
   // Marketing
-  marketingOptIn Boolean @default(false)
+  marketingOptIn Boolean? @default(false)
 
   // Timestamps
   createdAt     DateTime  @default(now())

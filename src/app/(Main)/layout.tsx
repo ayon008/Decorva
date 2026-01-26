@@ -4,6 +4,8 @@ import '../globals.css';
 import { rubik } from "@/Shared/font/Rubik";
 import Footer from "@/Shared/Foooter/footer";
 import NavBar from "@/Shared/Navbar/NavBar";
+import { SessionProvider } from "next-auth/react";
+import TanstackProvider from "@/Shared/Providers/TanstackProvider";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,9 +22,13 @@ export default function RootLayout({
       <body
         className={`${rubik.className} antialiased`}
       >
-        <NavBar />
-        {children}
-        <Footer />
+        <SessionProvider>
+          <TanstackProvider>
+            <NavBar />
+            {children}
+            <Footer />
+          </TanstackProvider>
+        </SessionProvider>
       </body>
     </html>
   );

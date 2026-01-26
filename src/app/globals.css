@@ -228,3 +228,8 @@ left: 8px;             /* leave room for thumb radius */
   border-image-slice: 1;
   border-width: 0 0 2px 0;
 }
+
+/* Rotation de l'icône chevron quand le dropdown est ouvert */
+div:has(#products-dropdown:checked) #products-chevron {
+  transform: rotate(90deg);
+}

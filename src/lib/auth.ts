@@ -10,6 +10,18 @@ import Google from "next-auth/providers/google";
 
 
 
+
+// event vs callbacks
+// callbacks are used to perform some task after the a action is performed
+// callback diye user block kora jay, authorization kora jay
+// callback = decision makers
+// Events hocche listeners
+// Auth action hoye jawar POR e run hoy
+// Logging, email, analytics er jonno use hoy
+// Event diye user block kora jay na
+
+
+
 export type ExtendedUSer = DefaultSession["user"] & {
     roles: UserRole[];
 }
@@ -20,7 +32,19 @@ declare module "next-auth" {
     }
 }
 
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
+    events: {
+        // email & password diye jodi account khola thake , abr same email diye google diye account khole tahole next auth new user create na kore link kore dibe
+        async linkAccount({ user }) {
+            const updateUser = await prisma.user.update({
+                where: { id: user.id },
+                data: {
+                    emailVerified: true
+                }
+            })
+        }
+    },
     callbacks: {
         // This runs after authentication succeeds, for ALL providers:
         //  it can block the user even if the provider is valid
@@ -41,12 +65,22 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
                     where: { id: token.sub }
                 })
                 if (getUser) {
-                    token.role = getUser?.roles;
+                    token.roles = getUser?.roles;
                     session.user.roles = getUser?.roles;
                 }
             }
             return session;
+        },
+        async jwt({ token }) {
+            if (!token.sub) return token;
+            const getUser = await prisma.user.findUnique({
+                where: { id: token.sub }
+            })
+            if (!getUser) return token;
+            token.roles = getUser?.roles;
+            return token;
         }
+
     },
     adapter: PrismaAdapter(prisma),
     session: { strategy: "jwt" },
