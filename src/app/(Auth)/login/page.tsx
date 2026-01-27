@@ -5,7 +5,7 @@ import loginImage from "@/../public/login-image.png"
 import { lora } from '@/Shared/font/Rubik';
 import Link from 'next/link';
 import { ArrowLeft, EyeIcon, EyeOff } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { LoginFormSchema } from '@/Shared/Schema/LoginSchema';
 import { z } from 'zod';
@@ -20,6 +20,10 @@ const LoginPage = () => {
     const { register, handleSubmit, reset, formState: { errors } } = useForm<LoginFormData>({
         resolver: zodResolver(LoginFormSchema),
     });
+
+    const callbackUrl = useSearchParams().get('callbackUrl') || '/';
+
+    console.log(callbackUrl);
 
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
@@ -47,7 +51,7 @@ const LoginPage = () => {
                 timer: 2000,
             });
             reset();
-            router.push('/');
+            router.push(callbackUrl);
         }
         else {
             Swal.fire({

@@ -4,7 +4,7 @@ import '../globals.css';
 import { rubik } from "@/Shared/font/Rubik";
 import { SessionProvider } from "next-auth/react";
 import TanstackProvider from "@/Shared/Providers/TanstackProvider";
-import { ChevronRight, Home, Menu, Package, Package2, TicketPercent, Truck, Users2 } from "lucide-react";
+import { ChartBar, ChevronRight, CreditCard, Home, Menu, Package, Package2, Settings, Star, TicketPercent, Truck, Users2 } from "lucide-react";
 import Link from "next/link";
 import Dropdown from "@/Shared/Dropdown/DrowDown";
 
@@ -147,6 +147,78 @@ export default function DashboardLayout({
                                             },
                                         ]} />
 
+                                        <Dropdown label="Payments" icon={<CreditCard className="w-4 h-4" />} items={[
+                                            {
+                                                label: "Payment methods",
+                                                href: "/dashboard/payments",
+                                            },
+                                            {
+                                                label: "Transactions",
+                                                href: "/dashboard/payments/transactions",
+                                            },
+                                            {
+                                                label: "Failed payments",
+                                                href: "/dashboard/payments/failed",
+                                            },
+
+                                        ]} />
+
+                                        <Dropdown label="Reviews" icon={<Star fill="#ecc94b" className="w-4 h-4" />} items={[
+                                            {
+                                                label: "Pending approval",
+                                                href: "/dashboard/reviews/pending",
+                                            },
+                                            {
+                                                label: "Approved",
+                                                href: "/dashboard/reviews/approved",
+                                            },
+                                            {
+                                                label: "Spam",
+                                                href: "/dashboard/reviews/spam",
+                                            },
+                                        ]} />
+
+                                        <Dropdown label="Analytics" icon={<ChartBar className="w-4 h-4" />} items={[
+                                            {
+                                                label: "Sales report",
+                                                href: "/dashboard/analytics/sales-report",
+                                            },
+                                            {
+                                                label: "Product performance",
+                                                href: "/dashboard/analytics/product-performance",
+                                            },
+                                            {
+                                                label: "Customer analytics",
+                                                href: "/dashboard/analytics/customer-analytics",
+                                            },
+                                        ]} />
+
+                                        <Dropdown label="Settings" icon={<Settings className="w-4 h-4" />} items={[
+                                            {
+                                                label: "General",
+                                                href: "/dashboard/settings/general",
+                                            },
+                                            {
+                                                label: "Store info",
+                                                href: "/dashboard/settings/store-info",
+                                            },
+                                            {
+                                                label: "Taxes",
+                                                href: "/dashboard/settings/taxes",
+                                            },
+                                            {
+                                                label: "Shipping",
+                                                href: "/dashboard/settings/shipping",
+                                            },
+                                            {
+                                                label: "Payments",
+                                                href: "/dashboard/settings/payments",
+                                            },
+                                            {
+                                                label: "Roles & permissions",
+                                                href: "/dashboard/settings/roles-permissions",
+                                            }
+                                        ]} />
 
                                     </nav>
                                 </div>
@@ -154,10 +226,10 @@ export default function DashboardLayout({
 
                             {/* Contenu principal */}
                             <main className="flex-1 h-full transition-all duration-300 ease-in-out peer-checked:ml-[250px] ml-0">
+                                <label htmlFor="sidebar-toggle" className="cursor-pointer text-white font-bold text-xl inline-block hover:opacity-80 peer-checked:hidden w-full bg-blue-50 p-4">
+                                    <Menu className="w-6 h-6 text-black" />
+                                </label>
                                 <div className="p-4">
-                                    <label htmlFor="sidebar-toggle" className="cursor-pointer text-white font-bold text-xl mb-4 inline-block hover:opacity-80 peer-checked:hidden">
-                                        <Menu className="w-6 h-6 text-black" />
-                                    </label>
                                     {children}
                                 </div>
                             </main>

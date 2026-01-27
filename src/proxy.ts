@@ -1,28 +1,40 @@
-import NextAuth from "next-auth"
-
 import { NextResponse } from "next/server";
-import authConfig from "./lib/auth-config";
+import { auth } from "./lib/auth";
 
-const { auth } = NextAuth(authConfig)
-export default auth(async function proxy(req) {
+export default auth(async function middleware(req) {
     const isLoggedIn = !!req.auth;
-    const protectedRoutes = ['/my-account'];
-    const adminRoutes = ['/dashboard', '/dashboard/:path*'];
+    const roles = req.auth?.user?.roles ?? [];
+    const isAdmin = roles.includes("ADMIN");
     const pathName = req.nextUrl.pathname;
-    const session = await auth();
-    const roles = session?.user?.roles;
-    if (protectedRoutes.includes(pathName) && !isLoggedIn) {
-        return NextResponse.redirect(new URL('/login', req.url))
+
+    const isProtectedRoute = pathName.startsWith("/my-account");
+    const isAdminRoute =
+        pathName === "/dashboard" || pathName.startsWith("/dashboard/");
+
+    // 🔒 Protected routes (auth required)
+    if (isProtectedRoute && !isLoggedIn) {
+        const loginUrl = new URL("/login", req.url);
+        loginUrl.searchParams.set("callbackUrl", pathName);
+        return NextResponse.redirect(loginUrl);
     }
 
-    if (pathName === '/login' && isLoggedIn) {
-        return NextResponse.redirect(new URL('/my-account', req.url))
+    // 🛡 Admin routes (auth + admin role)
+    if (isAdminRoute) {
+        if (!isLoggedIn || !isAdmin) {
+            const loginUrl = new URL("/login", req.url);
+            loginUrl.searchParams.set("callbackUrl", pathName);
+            return NextResponse.redirect(loginUrl);
+        }
     }
 
+    // 🚫 Logged-in users shouldn't see login page
+    if (isLoggedIn && pathName === "/login") {
+        return NextResponse.redirect(new URL("/my-account", req.url));
+    }
 
     return NextResponse.next();
-})
+});
 
 export const config = {
-    matcher: ['/((?!_next|api/auth).*)']
+    matcher: ["/((?!_next|api/auth).*)"],
 };

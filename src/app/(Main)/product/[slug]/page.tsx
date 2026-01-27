@@ -13,6 +13,7 @@ import type { Swiper as SwiperType } from 'swiper';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import ImageMagnifier from '@/Shared/Products/MagnifyImage';
 
 
 const ProductPage = () => {
@@ -138,7 +139,14 @@ const ProductPage = () => {
                                         return (
                                             <SwiperSlide key={i} className='w-full h-full'>
                                                 <div className='w-full h-full relative flex items-center justify-center aspect-video'>
-                                                    <Image src={img?.src} className='w-full h-full rounded-[4px] object-contain aspect-[1]' width={649} height={649} alt={'ayon'} />
+                                                    <ImageMagnifier
+                                                        src={img?.src}
+                                                        alt={'ayon'}
+                                                        className='w-full h-full rounded-[4px] object-contain aspect-[1]'
+                                                        width={450}
+                                                        height={450}
+                                                        zoomLevel={1.5}
+                                                    />
                                                 </div>
                                             </SwiperSlide>
                                         )

@@ -33,6 +33,7 @@ declare module "next-auth" {
 }
 
 
+
 export const { auth, handlers, signIn, signOut } = NextAuth({
     events: {
         // email & password diye jodi account khola thake , abr same email diye google diye account khole tahole next auth new user create na kore link kore dibe
@@ -80,6 +81,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             token.roles = getUser?.roles;
             return token;
         }
+        
 
     },
     adapter: PrismaAdapter(prisma),
