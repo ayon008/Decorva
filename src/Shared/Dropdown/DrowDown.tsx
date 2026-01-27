@@ -1,6 +1,7 @@
 "use client";
-import { ReactNode, useState, useRef } from "react";
+import { ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
@@ -18,9 +19,19 @@ interface DropdownProps {
 }
 
 const Dropdown: React.FC<DropdownProps> = ({ label, icon, items }) => {
-    const [isOpen, setIsOpen] = useState(false);
+    const pathname = usePathname();
+
+    const isAnyItemActive = useMemo(() => {
+        return items.some((item) => pathname === item.href || pathname.startsWith(item.href + "/"));
+    }, [items, pathname]);
+
+    const [isOpen, setIsOpen] = useState<boolean>(isAnyItemActive);
     const contentRef = useRef<HTMLDivElement>(null);
     const chevronRef = useRef<HTMLSpanElement>(null);
+
+    useEffect(() => {
+        setIsOpen(isAnyItemActive);
+    }, [isAnyItemActive]);
 
     useGSAP(() => {
         if (!contentRef.current || !chevronRef.current) return;
@@ -47,11 +58,16 @@ const Dropdown: React.FC<DropdownProps> = ({ label, icon, items }) => {
         setIsOpen(!isOpen);
     };
 
+    const baseItem =
+        "text-white p-2 rounded-sm transition-colors duration-200 flex items-center gap-3";
+    const activeItem = "bg-[#6F9805]";
+
     return (
         <div className="relative group">
             <button
                 onClick={toggleDropdown}
-                className="w-full hover:bg-[#6F9805] text-white p-2 rounded-sm transition-colors duration-200 flex items-center justify-between gap-3 cursor-pointer"
+                className={`w-full text-white p-2 rounded-sm transition-colors duration-200 flex items-center justify-between gap-3 cursor-pointer hover:bg-[#6F9805] ${isAnyItemActive ? activeItem : ""
+                    }`}
             >
                 <div className="flex items-center gap-3">
                     {icon}
@@ -74,7 +90,8 @@ const Dropdown: React.FC<DropdownProps> = ({ label, icon, items }) => {
                     <Link
                         key={idx}
                         href={item.href}
-                        className="hover:bg-[#6F9805] text-white p-2 rounded-sm transition-colors duration-200 flex items-center gap-3"
+                        className={`${baseItem} hover:bg-[#6F9805] ${pathname === item.href || pathname.startsWith(item.href + "/") ? activeItem : ""
+                            }`}
                     >
                         <span>{item.prefix || "-"}</span>
                         <span className="text-sm leading-[110%]">{item.label}</span>
