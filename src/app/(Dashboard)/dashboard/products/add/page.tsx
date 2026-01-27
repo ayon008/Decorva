@@ -4,6 +4,7 @@ import Attributes from '@/Components/Dashboard/Products/Attributes';
 import General from '@/Components/Dashboard/Products/General';
 import Inventory from '@/Components/Dashboard/Products/Inventory';
 import LinkedProducts from '@/Components/Dashboard/Products/LinkedProducts';
+import ProductCategories from '@/Components/Dashboard/Products/ProductCategories';
 import Shipping from '@/Components/Dashboard/Products/Shipping';
 import { Box, Link, Settings, ShieldCheck, Tag, Truck } from 'lucide-react';
 import Image from 'next/image';
@@ -296,6 +297,7 @@ const AddProductPage = () => {
                             )}
                         </div>
                     </div>
+                    <ProductCategories />
                 </aside>
             </div>
         </section>
