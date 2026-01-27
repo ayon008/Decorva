@@ -38,8 +38,8 @@ export default function DashboardLayout({
                             </aside>
 
                             {/* Contenu principal */}
-                            <main className="flex-1 h-full transition-all duration-300 ease-in-out peer-checked:ml-[250px] ml-0 bg-[#F0F0F1]">
-                                <div className="p-4 bg-white w-full">
+                            <main className="flex-1 h-full transition-all duration-300 ease-in-out peer-checked:ml-[250px] ml-0 bg-[#F0F0F1] overflow-y-auto scroll-bar">
+                                <div className="p-4 bg-white w-full sticky top-0 z-10">
                                     <label htmlFor="sidebar-toggle" className="cursor-pointer text-white font-bold text-xl inline-block hover:opacity-80 peer-checked:hidden">
                                         <Menu className="w-6 h-6 text-black" />
                                     </label>
