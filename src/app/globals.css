@@ -269,56 +269,85 @@ left: 8px;             /* leave room for thumb radius */
   opacity: 0.8;
 }
 
-.ProseMirror h1 {
-  font-size: 2em;
-  font-weight: bold;
-  margin-top: 0.67em;
-  margin-bottom: 0.67em;
-  line-height: 1.2;
+/* Styles pour les headings dans l'éditeur ProseMirror */
+.ProseMirror h1,
+.ProseMirror .editor-heading[data-level="1"],
+div[contenteditable="true"] h1,
+.ProseMirror [data-type="heading"][data-level="1"] {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  margin-top: 0.67em !important;
+  margin-bottom: 0.67em !important;
+  line-height: 1.2 !important;
+  display: block !important;
+  color: inherit !important;
 }
 
-.ProseMirror h2 {
-  font-size: 1.5em;
-  font-weight: bold;
-  margin-top: 0.83em;
-  margin-bottom: 0.83em;
-  line-height: 1.3;
+.ProseMirror h2,
+.ProseMirror .editor-heading[data-level="2"],
+div[contenteditable="true"] h2,
+.ProseMirror [data-type="heading"][data-level="2"] {
+  font-size: 1.25rem !important; 
+  font-weight: 700 !important;
+  margin-top: 0.83em !important;
+  margin-bottom: 0.83em !important;
+  line-height: 1.3 !important;
+  display: block !important;
+  color: inherit !important;
 }
 
-.ProseMirror h3 {
-  font-size: 1.17em;
-  font-weight: bold;
-  margin-top: 1em;
-  margin-bottom: 1em;
-  line-height: 1.4;
+.ProseMirror h3,
+.ProseMirror .editor-heading[data-level="3"],
+div[contenteditable="true"] h3,
+.ProseMirror [data-type="heading"][data-level="3"] {
+  font-size: 1.125rem !important;
+  font-weight: 700 !important;
+  margin-top: 1em !important;
+  margin-bottom: 1em !important;
+  line-height: 1.4 !important;
+  display: block !important;
+  color: inherit !important;
 }
 
-.ProseMirror h4 {
-  font-size: 1em;
-  font-weight: bold;
-  margin-top: 1.33em;
-  margin-bottom: 1.33em;
-  line-height: 1.5;
+.ProseMirror h4,
+div[contenteditable="true"] h4,
+.ProseMirror [data-type="heading"][data-level="4"] {
+  font-size: 1rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.33em !important;
+  margin-bottom: 1.33em !important;
+  line-height: 1.5 !important;
+  display: block !important;
+  color: inherit !important;
 }
 
-.ProseMirror h5 {
-  font-size: 0.83em;
-  font-weight: bold;
-  margin-top: 1.67em;
-  margin-bottom: 1.67em;
-  line-height: 1.5;
+.ProseMirror h5,
+div[contenteditable="true"] h5,
+.ProseMirror [data-type="heading"][data-level="5"] {
+  font-size: 0.875rem !important;
+  font-weight: 700 !important;
+  margin-top: 1.67em !important;
+  margin-bottom: 1.67em !important;
+  line-height: 1.5 !important;
+  display: block !important;
+  color: inherit !important;
 }
 
-.ProseMirror h6 {
-  font-size: 0.67em;
-  font-weight: bold;
-  margin-top: 2.33em;
-  margin-bottom: 2.33em;
-  line-height: 1.5;
+.ProseMirror h6,
+div[contenteditable="true"] h6,
+.ProseMirror [data-type="heading"][data-level="6"] {
+  font-size: 0.75rem !important;
+  font-weight: 700 !important;
+  margin-top: 2.33em !important;
+  margin-bottom: 2.33em !important;
+  line-height: 1.5 !important;
+  display: block !important;
+  color: inherit !important;
 }
 
 .ProseMirror p {
   margin: 1em 0;
+  display: block;
 }
 
 .ProseMirror blockquote {
@@ -329,6 +358,13 @@ left: 8px;             /* leave room for thumb radius */
   font-style: italic;
 }
 
+/* Images dans l'éditeur : ne pas déformer, ne pas déborder */
+.ProseMirror img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
 
 .is-active{
   @apply border-2 border-primary text-black

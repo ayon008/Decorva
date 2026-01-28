@@ -1,10 +1,11 @@
 "use client";
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { useEditor, EditorContent, Editor, useEditorState } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit'
 import TextAlign from '@tiptap/extension-text-align'
 import Link from '@tiptap/extension-link'
 import Color from '@tiptap/extension-color'
+import Image from '@tiptap/extension-image'
 import { AlignCenter, AlignLeft, AlignRight, Italic, List, ListOrdered, Quote, Strikethrough, Link as LinkIcon, Minus, Palette, Clipboard, Eraser, Type, IndentDecrease, IndentIncrease, Undo2, Redo2 } from "lucide-react";
 import { Indent } from "./Indent";
 
@@ -15,6 +16,7 @@ const MenuBar = ({ editor, pasteAsTextMode, setPasteAsTextMode }: { editor: Edit
     const [customColor, setCustomColor] = useState('#000000')
     const colorPickerRef = useRef<HTMLDivElement>(null)
     const specialCharsRef = useRef<HTMLDivElement>(null)
+    const fileInputRef = useRef<HTMLInputElement | null>(null)
 
     // Close modals when clicking outside
     useEffect(() => {
@@ -100,9 +102,54 @@ const MenuBar = ({ editor, pasteAsTextMode, setPasteAsTextMode }: { editor: Edit
         setShowSpecialChars(false)
     }
 
+    const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if (!file || !editor) return
+
+        const reader = new FileReader()
+        reader.onload = () => {
+            const src = reader.result
+            if (typeof src === 'string') {
+                editor
+                    .chain()
+                    .focus()
+                    .setImage({ src, alt: file.name })
+                    .run()
+            }
+        }
+        reader.readAsDataURL(file)
+
+        // reset input so selecting same file again still triggers change
+        event.target.value = ''
+    }
+
     return (
         <div className="control-group border-b border-b-black/30">
-            <div className="button-group flex gap-2 flex-wrap px-3">
+            <div className="border-b border-b-black/30 pb-2 px-3 flex items-center gap-2">
+                <button
+                    type="button"
+                    title="Add image from file manager"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="text-black/50 cursor-pointer border-2 border-primary px-2 h-8 flex items-center justify-center rounded-sm transition-all duration-300 delay-150 text-xs"
+                >
+                    Add image
+                </button>
+                <input
+                    title="Add image from file manager"
+                    placeholder="Add image from file manager"
+                    aria-label="Add image from file manager"
+                    aria-required="true"
+                    aria-describedby="add-image-from-file-manager"
+                    aria-invalid="false"
+                    aria-hidden="true"
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={handleImageUpload}
+                />
+            </div>
+            <div className="button-group flex gap-2 flex-wrap px-3 pb-2">
                 <button
                     type="button"
                     onClick={() => editor?.chain().focus().toggleBold().run()}
@@ -387,6 +434,31 @@ const MenuBar = ({ editor, pasteAsTextMode, setPasteAsTextMode }: { editor: Edit
                 >
                     H3
                 </button>
+                <button
+                    title="Heading 4"
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleHeading({ level: 4 }).run()}
+                    className={`${editorState?.isHeading4 ? 'is-active' : 'text-black/50'} cursor-pointer border-2 hover:border-primary border-white w-8 h-8 flex items-center justify-center rounded-sm transition-all duration-300 delay-150 font-bold`}
+                >
+                    H4
+                </button>
+                <button
+                    title="Heading 5"
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleHeading({ level: 5 }).run()}
+                    className={`${editorState?.isHeading5 ? 'is-active' : 'text-black/50'} cursor-pointer border-2 hover:border-primary border-white w-8 h-8 flex items-center justify-center rounded-sm transition-all duration-300 delay-150 font-bold`}
+                >
+                    H5
+                </button>
+                <button
+                    title="Heading 6"
+                    type="button"
+                    onClick={() => editor?.chain().focus().toggleHeading({ level: 6 }).run()}
+                    className={`${editorState?.isHeading6 ? 'is-active' : 'text-black/50'} cursor-pointer border-2 hover:border-primary border-white w-8 h-8 flex items-center justify-center rounded-sm transition-all duration-300 delay-150 font-bold`}
+                >
+                    H6
+                </button>
+
                 {/* <button
                     onClick={() => editor?.chain().focus().toggleCode().run()}
                     disabled={!editorState?.canCode}
@@ -420,24 +492,7 @@ const MenuBar = ({ editor, pasteAsTextMode, setPasteAsTextMode }: { editor: Edit
                 >
                     H3
                 </button>
-                <button
-                    onClick={() => editor?.chain().focus().toggleHeading({ level: 4 }).run()}
-                    className={editorState?.isHeading4 ? 'is-active' : ''}
-                >
-                    H4
-                </button>
-                <button
-                    onClick={() => editor?.chain().focus().toggleHeading({ level: 5 }).run()}
-                    className={editorState?.isHeading5 ? 'is-active' : ''}
-                >
-                    H5
-                </button>
-                <button
-                    onClick={() => editor?.chain().focus().toggleHeading({ level: 6 }).run()}
-                    className={editorState?.isHeading6 ? 'is-active' : ''}
-                >
-                    H6
-                </button>
+              
 
                 <button
                     onClick={() => editor?.chain().focus().toggleOrderedList().run()}
@@ -467,7 +522,7 @@ const MenuBar = ({ editor, pasteAsTextMode, setPasteAsTextMode }: { editor: Edit
 
 
 
-const ProductDescription = () => {
+const ProductDescription = ({ heading, height }: { heading: string, height: string }) => {
     const [pasteAsTextMode, setPasteAsTextMode] = useState(false)
     const pasteModeRef = useRef(pasteAsTextMode)
 
@@ -480,6 +535,9 @@ const ProductDescription = () => {
             StarterKit.configure({
                 heading: {
                     levels: [1, 2, 3, 4, 5, 6],
+                    HTMLAttributes: {
+                        class: 'editor-heading',
+                    },
                 },
             }),
             Indent,
@@ -493,12 +551,17 @@ const ProductDescription = () => {
                 },
             }),
             Color,
+            Image.configure({
+                HTMLAttributes: {
+                    class: 'max-w-full h-auto my-4 rounded-sm',
+                },
+            }),
         ],
         content: '',
         immediatelyRender: false,
         editorProps: {
             attributes: {
-                class: "p-3 h-[400px] focus:outline-none"
+                class: `p-3 h-[${height}] overflow-y-auto scroll-bar focus:outline-none`
             },
             handlePaste: (view, event) => {
                 if (pasteModeRef.current) {
@@ -513,13 +576,45 @@ const ProductDescription = () => {
             },
         },
     })
+
+    // Fonction pour logger les données de l'éditeur
+    const logEditorData = useCallback(() => {
+        if (!editor) {
+            console.log('Editor not initialized')
+            return
+        }
+
+        const htmlContent = editor.getHTML()
+        const jsonContent = editor.getJSON()
+        const textContent = editor.getText()
+
+        console.log('=== Editor Data ===')
+        console.log('HTML Content:', htmlContent)
+        console.log('JSON Content:', jsonContent)
+        console.log('Text Content:', textContent)
+        console.log('==================')
+    }, [editor])
+
+    // Logger les données quand l'éditeur change
+    // useEffect(() => {
+    //     if (editor) {
+    //         const handleUpdate = () => {
+    //             logEditorData()
+    //         }
+    //         editor.on('update', handleUpdate)
+    //         return () => {
+    //             editor.off('update', handleUpdate)
+    //         }
+    //     }
+    // }, [editor, logEditorData])
+
     return (
         <div className="bg-white flex flex-col gap-2 border border-black/30">
-            <div className="text-base border-b border-b-black/30 p-3">
-                Product Description
+            <div className="text-base border-b border-b-black/30 p-3 cursor-pointer" onClick={() => logEditorData()}>
+                {heading}
             </div>
             <MenuBar editor={editor} pasteAsTextMode={pasteAsTextMode} setPasteAsTextMode={setPasteAsTextMode} />
-            <div className="">
+            <div className="prose prose-sm max-w-none">
                 <EditorContent editor={editor} />
             </div>
         </div>
