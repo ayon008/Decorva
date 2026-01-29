@@ -32,6 +32,12 @@ declare module "next-auth" {
     }
 }
 
+declare module "next-auth/jwt" {
+    interface JWT {
+        roles: UserRole[];
+    }
+}
+
 
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
@@ -81,7 +87,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             token.roles = getUser?.roles;
             return token;
         }
-        
+
 
     },
     adapter: PrismaAdapter(prisma),

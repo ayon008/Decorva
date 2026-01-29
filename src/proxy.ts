@@ -1,16 +1,25 @@
 import { NextResponse } from "next/server";
-import { auth } from "./lib/auth";
+import authConfig from "../src/lib/auth-config"
+import NextAuth from "next-auth";
+import { getToken } from "next-auth/jwt";
+import { UserRole } from "@prisma/client";
 
+
+const { auth } = NextAuth(authConfig)
 export default auth(async function proxy(req) {
-    const isLoggedIn = !!req.auth;
-    const roles = req.auth?.user?.roles ?? [];
-    const isAdmin = roles.includes("ADMIN");
-    const pathName = req.nextUrl.pathname;
 
+    const token = await getToken({
+        req,
+        secret: process.env.AUTH_SECRET,
+    });
+    const isLoggedIn = !!token;
+    const roles = token?.roles ?? [];
+    const isAdmin = roles.includes(UserRole.ADMIN);
+
+    const pathName = req.nextUrl.pathname;
     const isProtectedRoute = pathName.startsWith("/my-account");
     const isAdminRoute =
         pathName === "/dashboard" || pathName.startsWith("/dashboard/");
-
     // 🔒 Protected routes (auth required)
     if (isProtectedRoute && !isLoggedIn) {
         const loginUrl = new URL("/login", req.url);
