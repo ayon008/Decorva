@@ -21,7 +21,8 @@ const LoginPage = () => {
         resolver: zodResolver(LoginFormSchema),
     });
 
-    const callbackUrl = useSearchParams().get('callbackUrl') || '/';
+    const searchParams = useSearchParams();
+    const callbackUrl = searchParams.get('callbackUrl') || '/';
 
     console.log(callbackUrl);
 
