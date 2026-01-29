@@ -3,7 +3,7 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-const ProductFeatureImage = () => {
+const ProductFeatureImage = ({ setFeaturedImage }: { setFeaturedImage: (file: File) => void }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
 
@@ -50,7 +50,7 @@ const ProductFeatureImage = () => {
               e.currentTarget.value = "";
               return;
             }
-
+            setFeaturedImage(file);
             const url = URL.createObjectURL(file);
             previewUrlRef.current = url;
             setFeaturePreviewUrl(url);

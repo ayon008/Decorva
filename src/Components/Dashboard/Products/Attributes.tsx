@@ -1,6 +1,17 @@
-import React from 'react'
+'use client'
+import React, { useState, useEffect } from 'react'
 
-const Attributes = () => {
+export type AttributesData = {
+    searchAttribute: string
+}
+
+const Attributes = ({ setAttributesData }: { setAttributesData: (data: AttributesData) => void }) => {
+    const [searchAttribute, setSearchAttribute] = useState('')
+
+    useEffect(() => {
+        setAttributesData({ searchAttribute })
+    }, [searchAttribute, setAttributesData])
+
     return (
         <div className='p-3 flex flex-col gap-4'>
             <div className='flex items-center gap-2'>
@@ -10,7 +21,7 @@ const Attributes = () => {
                 >
                     Add New
                 </button>
-                <input type="text" placeholder='Search for an attribute' className='border px-2 py-1 border-black/30 rounded-sm w-full max-w-[150px] placeholder:text-xs' />
+                <input type="text" placeholder='Search for an attribute' className='border px-2 py-1 border-black/30 rounded-sm w-full max-w-[150px] placeholder:text-xs' value={searchAttribute} onChange={(e) => setSearchAttribute(e.target.value)} />
             </div>
         </div>
     )

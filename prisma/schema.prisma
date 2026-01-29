@@ -19,6 +19,30 @@ enum UserRole {
   SHOP_MANAGER
 }
 
+enum ProductStatus {
+  DRAFT
+  PUBLISH
+  PRIVATE
+}
+
+enum ProductVisibility {
+  VISIBLE
+  CATALOG
+  SEARCH
+  HIDDEN
+}
+
+enum ProductType {
+  SIMPLE
+  VARIABLE
+}
+
+enum StockStatus {
+  INSTOCK
+  OUTOFSTOCK
+  ONBACKORDER
+}
+
 model User {
   id                String           @id @default(auto()) @map("_id") @db.ObjectId
   email             String           @unique
@@ -29,13 +53,13 @@ model User {
   company           String?
   taxId             String?
   customerNotes     String?
-  isActive          Boolean?          @default(true)
-  emailVerified     Boolean?          @default(false)
+  isActive          Boolean?         @default(true)
+  emailVerified     Boolean?         @default(false)
   roles             UserRole[]       @default([CUSTOMER])
   billingAddress    BillingAddress?  @relation(fields: [billingAddressId], references: [id])
-  billingAddressId  String?          @db.ObjectId @unique
+  billingAddressId  String?          @unique @db.ObjectId
   shippingAddress   ShippingAddress? @relation(fields: [shippingAddressId], references: [id])
-  shippingAddressId String?          @db.ObjectId @unique
+  shippingAddressId String?          @unique @db.ObjectId
 
   wishlist  WishlistItem[]
   cartItems CartItem[]
@@ -138,4 +162,204 @@ model ProductReview {
 
   @@index([userId])
   @@index([productId])
+}
+
+model Product {
+  id                   String            @id @default(auto()) @map("_id") @db.ObjectId
+  name                 String
+  slug                 String            @unique
+  descriptionHtml      String // main content
+  descriptionText      String? // optional (search, preview)
+  shortDescriptionHtml String?
+  shortDescriptionText String?
+  sku                  String?           @unique
+  status               ProductStatus     @default(DRAFT)
+  visibility           ProductVisibility @default(VISIBLE)
+  featured             Boolean           @default(false)
+  productType          ProductType       @default(SIMPLE)
+
+  // Pricing
+  price        Float?
+  regularPrice Float?
+  salePrice    Float?
+  saleStart    DateTime?
+  saleEnd      DateTime?
+
+  // Stock
+  stockStatus   StockStatus @default(INSTOCK)
+  manageStock   Boolean     @default(false)
+  stockQuantity Int?
+
+  // Dimensions
+  weight Float?
+  length Float?
+  width  Float?
+  height Float?
+
+  // Product flags
+  virtual      Boolean @default(false)
+  downloadable Boolean @default(false)
+
+  // Featured image
+  featuredImageId String? @db.ObjectId
+
+  // Parent product for variations
+  parentId String?  @db.ObjectId
+  parent   Product? @relation("ParentProduct", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  // Relations
+  variations  ProductVariation[] @relation("ParentProduct")
+  images      ProductImage[]
+  attributes  ProductAttribute[]
+  categories  ProductCategory[]  @relation(fields: [categoryIds], references: [id])
+  categoryIds String[]           @db.ObjectId
+  tags        ProductTag[]       @relation(fields: [tagIds], references: [id])
+  tagIds      String[]           @db.ObjectId
+
+  // Timestamps
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  products        Product[]      @relation("ParentProduct")
+  shippingClass   ShippingClass? @relation(fields: [shippingClassId], references: [id])
+  shippingClassId String?        @db.ObjectId
+  productBrand    ProductBrand?  @relation(fields: [productBrandId], references: [id])
+  productBrandId  String?        @db.ObjectId
+
+  @@index([status])
+  @@index([productType])
+  @@index([featured])
+  @@index([parentId])
+  @@index([categoryIds])
+  @@index([tagIds])
+  @@index([shippingClassId])
+}
+
+model ProductVariation {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @db.ObjectId
+  product   Product @relation("ParentProduct", fields: [productId], references: [id], onDelete: Cascade)
+
+  // Variation specific fields
+  sku           String?
+  price         Float?
+  regularPrice  Float?
+  salePrice     Float?
+  stockStatus   StockStatus @default(INSTOCK)
+  manageStock   Boolean     @default(false)
+  stockQuantity Int?
+  weight        Float?
+  length        Float?
+  width         Float?
+  height        Float?
+  imageId       String?     @db.ObjectId
+
+  // Attribute combinations for this variation
+  attributes VariationAttribute[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+  @@index([sku])
+}
+
+model VariationAttribute {
+  id          String           @id @default(auto()) @map("_id") @db.ObjectId
+  variationId String           @db.ObjectId
+  variation   ProductVariation @relation(fields: [variationId], references: [id], onDelete: Cascade)
+  name        String
+  value       String
+
+  @@index([variationId])
+}
+
+model ProductAttribute {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  productId String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  name      String
+  values    String[]
+  visible   Boolean  @default(true)
+  variation Boolean  @default(false)
+  position  Int      @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model ProductImage {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url       String
+  alt       String?
+  position  Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([productId])
+}
+
+model ProductCategory {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String            @unique
+  description String?
+  parentId    String?           @db.ObjectId
+  parent      ProductCategory?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  children    ProductCategory[] @relation("CategoryHierarchy")
+  imageUrl    String?
+  count       Int               @default(0)
+
+  products   Product[] @relation(fields: [productIds], references: [id])
+  productIds String[]  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([parentId])
+}
+
+model ProductTag {
+  id          String  @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String  @unique
+  description String?
+  count       Int     @default(0)
+
+  products   Product[] @relation(fields: [productIds], references: [id])
+  productIds String[]  @db.ObjectId
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ShippingClass {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String
+  description String?
+  count       Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ProductBrand {
+  id          String    @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  slug        String
+  description String?
+  logoUrl     String?
+  websiteUrl  String?
+  count       Int       @default(0)
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([slug])
 }

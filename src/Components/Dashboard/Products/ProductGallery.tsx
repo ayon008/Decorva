@@ -3,9 +3,9 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-type GalleryItem = { id: string; url: string; name: string };
+type GalleryItem = { id: string; url: string; name: string; file: File };
 
-const ProductGallery = () => {
+const ProductGallery = ({ setGalleryImages }: { setGalleryImages: (files: File[]) => void }) => {
   const makeId = () => `${Date.now()}-${Math.random().toString(16).slice(2)}`;
 
   const galleryInputRef = useRef<HTMLInputElement>(null);
@@ -52,11 +52,15 @@ const ProductGallery = () => {
 
             const newItems: GalleryItem[] = files.map((f) => {
               const url = URL.createObjectURL(f);
-              return { id: makeId(), url, name: f.name };
+              return { id: makeId(), url, name: f.name, file: f };
             });
 
             galleryItemsRef.current = [...galleryItemsRef.current, ...newItems];
-            setGalleryItems((prev) => [...prev, ...newItems]);
+            setGalleryItems((prev) => {
+              const next = [...prev, ...newItems];
+              setGalleryImages(next.map((item) => item.file));
+              return next;
+            });
 
             // allow selecting the same file(s) again
             e.currentTarget.value = "";
@@ -82,7 +86,11 @@ const ProductGallery = () => {
                   onClick={() => {
                     URL.revokeObjectURL(item.url);
                     galleryItemsRef.current = galleryItemsRef.current.filter((u) => u.url !== item.url);
-                    setGalleryItems((prev) => prev.filter((x) => x.id !== item.id));
+                    setGalleryItems((prev) => {
+                      const next = prev.filter((x) => x.id !== item.id);
+                      setGalleryImages(next.map((i) => i.file));
+                      return next;
+                    });
                   }}
                 >
                   ×
@@ -100,6 +108,7 @@ const ProductGallery = () => {
               galleryItemsRef.current.forEach((u) => URL.revokeObjectURL(u.url));
               galleryItemsRef.current = [];
               setGalleryItems([]);
+              setGalleryImages([]);
               if (galleryInputRef.current) galleryInputRef.current.value = "";
             }}
           >

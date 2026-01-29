@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { Link, Box, ShieldCheck, Tag, Settings, Truck } from 'lucide-react'
 import React from 'react'
@@ -7,10 +8,53 @@ import Shipping from './Shipping'
 import LinkedProducts from './LinkedProducts'
 import Attributes from './Attributes'
 import Advanced from './Advanced'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
-const SimpleProductTable = () => {
-    const [activeTab, setActiveTab] = useState<number>(0)
+const SimpleProductTable = ({ setSampleProductData }: { setSampleProductData: (data: any) => void }) => {
+    const [activeTab, setActiveTab] = useState<number>(0);
+    const [generalData, setGeneralDataState] = useState<any>(null);
+    const [inventoryData, setInventoryDataState] = useState<any>(null);
+    const [shippingData, setShippingDataState] = useState<any>(null);
+    const [linkedProductsData, setLinkedProductsDataState] = useState<any>(null);
+    const [attributesData, setAttributesDataState] = useState<any>(null);
+    const [advancedData, setAdvancedDataState] = useState<any>(null);
+
+    const setGeneralData = (data: any) => {
+        setGeneralDataState(data);
+        console.log('generalData:', data);
+    };
+    const setInventoryData = (data: any) => {
+        setInventoryDataState(data);
+        console.log('inventoryData:', data);
+    };
+    const setShippingData = (data: any) => {
+        setShippingDataState(data);
+        console.log('shippingData:', data);
+    };
+    const setLinkedProductsData = (data: any) => {
+        setLinkedProductsDataState(data);
+        console.log('linkedProductsData:', data);
+    };
+    const setAttributesData = (data: any) => {
+        setAttributesDataState(data);
+        console.log('attributesData:', data);
+    };
+    const setAdvancedData = (data: any) => {
+        setAdvancedDataState(data);
+        console.log('advancedData:', data);
+    };
+
+    useEffect(() => {
+        setSampleProductData({
+            general: generalData,
+            inventory: inventoryData,
+            shipping: shippingData,
+            linkedProducts: linkedProductsData,
+            attributes: attributesData,
+            advanced: advancedData,
+        });
+    }, [generalData, inventoryData, shippingData, linkedProductsData, attributesData, advancedData, setSampleProductData]);
+
     return (
         <>
             <div className='w-[30%] border-r border-black/30 bg-[#FAFAFA]'>
@@ -42,32 +86,32 @@ const SimpleProductTable = () => {
             <div className='w-[70%] pl-2'>
                 {
                     activeTab === 0 && <>
-                        <General />
+                        <General setGeneralData={setGeneralData} />
                     </>
                 }
                 {
                     activeTab === 1 && <>
-                        <Inventory />
+                        <Inventory setInventoryData={setInventoryData} />
                     </>
                 }
                 {
                     activeTab === 2 && <>
-                        <Shipping />
+                        <Shipping setShippingData={setShippingData} />
                     </>
                 }
                 {
                     activeTab === 3 && <>
-                        <LinkedProducts />
+                        <LinkedProducts setLinkedProductsData={setLinkedProductsData} />
                     </>
                 }
                 {
                     activeTab === 4 && <>
-                        <Attributes />
+                        <Attributes setAttributesData={setAttributesData} />
                     </>
                 }
                 {
                     activeTab === 5 && <>
-                        <Advanced />
+                        <Advanced setAdvancedData={setAdvancedData} />
                     </>
                 }
             </div>

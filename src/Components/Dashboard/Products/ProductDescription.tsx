@@ -522,13 +522,17 @@ const MenuBar = ({ editor, pasteAsTextMode, setPasteAsTextMode }: { editor: Edit
 
 
 
-const ProductDescription = ({ heading, height }: { heading: string, height: string }) => {
+const ProductDescription = ({
+    heading,
+    height,
+    onChange,
+}: {
+    heading: string
+    height: string
+    onChange?: (data: { productDescription: string; productDescriptionHtml: string }) => void
+}) => {
     const [pasteAsTextMode, setPasteAsTextMode] = useState(false)
     const pasteModeRef = useRef(pasteAsTextMode)
-
-    console.log(height);
-
-
     useEffect(() => {
         pasteModeRef.current = pasteAsTextMode
     }, [pasteAsTextMode])
@@ -580,7 +584,10 @@ const ProductDescription = ({ heading, height }: { heading: string, height: stri
         },
     })
 
-    // Fonction pour logger les données de l'éditeur
+    // Ref pour stocker le contenu précédent
+    const previousContentRef = useRef<string>('')
+
+    // Fonction pour logger les données de l'éditeur seulement si le contenu a changé
     const logEditorData = useCallback(() => {
         if (!editor) {
             console.log('Editor not initialized')
@@ -588,32 +595,40 @@ const ProductDescription = ({ heading, height }: { heading: string, height: stri
         }
 
         const htmlContent = editor.getHTML()
-        const jsonContent = editor.getJSON()
+        
+        // Ne logger que si le contenu a réellement changé
+        if (htmlContent === previousContentRef.current) {
+            return
+        }
+
+        previousContentRef.current = htmlContent
+
         const textContent = editor.getText()
 
-        console.log('=== Editor Data ===')
-        console.log('HTML Content:', htmlContent)
-        console.log('JSON Content:', jsonContent)
-        console.log('Text Content:', textContent)
-        console.log('==================')
-    }, [editor])
+        const data = {
+            productDescription: textContent,
+            productDescriptionHtml: htmlContent,
+        }
+        onChange?.(data)
+        console.log('=== Editor Data Changed ===', data)
+    }, [editor, onChange])
 
-    // Logger les données quand l'éditeur change
-    // useEffect(() => {
-    //     if (editor) {
-    //         const handleUpdate = () => {
-    //             logEditorData()
-    //         }
-    //         editor.on('update', handleUpdate)
-    //         return () => {
-    //             editor.off('update', handleUpdate)
-    //         }
-    //     }
-    // }, [editor, logEditorData])
+    // Logger les données quand l'éditeur change (onChange)
+    useEffect(() => {
+        if (editor) {
+            const handleUpdate = () => {
+                logEditorData()
+            }
+            editor.on('update', handleUpdate)
+            return () => {
+                editor.off('update', handleUpdate)
+            }
+        }
+    }, [editor, logEditorData])
 
     return (
         <div className="bg-white flex flex-col gap-2 border border-black/30">
-            <div className="text-base border-b border-b-black/30 p-3 cursor-pointer" onClick={() => logEditorData()}>
+            <div className="text-base border-b border-b-black/30 p-3 cursor-pointer">
                 {heading}
             </div>
             <MenuBar editor={editor} pasteAsTextMode={pasteAsTextMode} setPasteAsTextMode={setPasteAsTextMode} />

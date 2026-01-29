@@ -4,8 +4,6 @@ import React, { useState } from 'react'
 const ProductCategories = () => {
     const [newCategory, setNewCategory] = useState<boolean>(false);
 
-    console.log(newCategory);
-
     return (
         <div className='bg-white p-3 flex flex-col gap-2 border border-black/30'>
             <div className='text-base border-b border-b-black/30 pb-2'>
