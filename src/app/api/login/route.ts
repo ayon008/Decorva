@@ -1,5 +1,5 @@
+import { LoginFormData } from "@/Shared/Form/LoginForm";
 import { LoginFormSchema } from "@/Shared/Schema/LoginSchema";
-import { LoginFormData } from "@/app/(Auth)/login/page";
 import { signIn } from "@/lib/auth";
 import { AuthError } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
