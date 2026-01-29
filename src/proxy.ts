@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "./lib/auth";
 
-export default auth(async function middleware(req) {
+export default auth(async function proxy(req) {
     const isLoggedIn = !!req.auth;
     const roles = req.auth?.user?.roles ?? [];
     const isAdmin = roles.includes("ADMIN");
