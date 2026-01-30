@@ -159,6 +159,7 @@ model ProductReview {
   rating    Int
   review    String?
   createdAt DateTime @default(now())
+  product   Product  @relation(fields: [productId], references: [id])
 
   @@index([userId])
   @@index([productId])
@@ -173,7 +174,7 @@ model Product {
   shortDescriptionHtml String?
   shortDescriptionText String?
   sku                  String?           @unique
-  status               ProductStatus     @default(DRAFT)
+  status               ProductStatus     @default(PUBLISH)
   visibility           ProductVisibility @default(VISIBLE)
   featured             Boolean           @default(false)
   productType          ProductType       @default(SIMPLE)
@@ -200,9 +201,6 @@ model Product {
   virtual      Boolean @default(false)
   downloadable Boolean @default(false)
 
-  // Featured image
-  featuredImageId String? @db.ObjectId
-
   // Parent product for variations
   parentId String?  @db.ObjectId
   parent   Product? @relation("ParentProduct", fields: [parentId], references: [id], onDelete: NoAction, onUpdate: NoAction)
@@ -224,6 +222,15 @@ model Product {
   shippingClassId String?        @db.ObjectId
   productBrand    ProductBrand?  @relation(fields: [productBrandId], references: [id])
   productBrandId  String?        @db.ObjectId
+
+  // 
+  enabledReviews Boolean         @default(false)
+  purchaseNote   String?
+  reviews        ProductReview[]
+
+  // Cross-sell and upsell
+  crossSellIds String[] @db.ObjectId
+  upsellIds    String[] @db.ObjectId
 
   @@index([status])
   @@index([productType])
@@ -268,26 +275,29 @@ model VariationAttribute {
   id          String           @id @default(auto()) @map("_id") @db.ObjectId
   variationId String           @db.ObjectId
   variation   ProductVariation @relation(fields: [variationId], references: [id], onDelete: Cascade)
+
+  attributeId String? @db.ObjectId
   name        String
-  value       String
+  value       String // slug only ("red")
 
   @@index([variationId])
 }
 
 model ProductAttribute {
-  id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  productId String   @db.ObjectId
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  name      String
-  values    String[]
-  visible   Boolean  @default(true)
-  variation Boolean  @default(false)
-  position  Int      @default(0)
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  productId String  @db.ObjectId
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  attributeId String?  @db.ObjectId // 🔥 link to global attribute (optional)
+  name        String
+  values      String[] // store SLUGS, not labels
+
+  visible   Boolean @default(true)
+  variation Boolean @default(false)
+  position  Int     @default(0)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  @@index([productId])
 }
 
 model ProductImage {

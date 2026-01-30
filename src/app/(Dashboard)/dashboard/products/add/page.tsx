@@ -8,8 +8,37 @@ import ProductGallery from '@/Components/Dashboard/Products/ProductGallery';
 import ProductTags from '@/Components/Dashboard/Products/ProductTags';
 import SimpleProductTable from '@/Components/Dashboard/Products/SimpleProductTable';
 import VariableProductTable from '@/Components/Dashboard/Products/VariableProduct';
-import { Product, ProductStatus, ProductType, ProductVisibility, StockStatus } from '@prisma/client';
+import { ProductStatus, ProductType, ProductVisibility, StockStatus } from '@prisma/client';
 import React, { useState } from 'react'
+import Swal from 'sweetalert2';
+
+/** Finds img tags with data: or blob: src, uploads each to ImgBB, replaces src with ImgBB URL. */
+async function uploadHtmlImagesToImgBB(html: string): Promise<string> {
+    if (!html || !html.includes('<img')) return html
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const imgs = Array.from(doc.querySelectorAll<HTMLImageElement>('img'))
+    const toUpload = imgs.filter((img) => img.src?.startsWith('data:') || img.src?.startsWith('blob:'))
+    await Promise.all(
+        toUpload.map(async (img) => {
+            try {
+                const res = await fetch(img.src)
+                const blob = await res.blob()
+                const ext = blob.type.split('/')[1] || 'png'
+                const file = new File([blob], `image-${Date.now()}.${ext}`, { type: blob.type })
+                const formData = new FormData()
+                formData.append('file', file)
+                const uploadRes = await fetch('/api/upload-image', { method: 'POST', body: formData })
+                const data = await uploadRes.json()
+                if (data?.url) img.setAttribute('src', data.url)
+            } catch {
+                // keep original src on failure
+            }
+        })
+    )
+    return doc.body?.innerHTML ?? html
+}
+
 
 const AddProductPage = () => {
 
@@ -24,7 +53,7 @@ const AddProductPage = () => {
     const [galleryImages, setGalleryImages] = useState<File[]>([]);
     const [tags, setTags] = useState<string[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<string>('');
-
+    const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
 
     const handleProductDescriptionChange = (data: { productDescription: string; productDescriptionHtml: string }) => {
         setProductDescription(data.productDescription)
@@ -36,32 +65,90 @@ const AddProductPage = () => {
         setProductShortDescriptionHtml(data.productDescriptionHtml)
     }
 
+    const images = [...galleryImages, featuredImage].filter((image): image is File => image != null);
+
     const productData = {
         name: productName,
         slug: productName.toLowerCase().replace(/ /g, '-'),
-        sku: sampleProductData?.inventory?.sku,
         descriptionText: productDescription,
-        descriptionHtml: productDescriptionHtml,
         shortDescriptionText: productShortDescription,
-        shortDescriptionHtml: productShortDescriptionHtml,
+        sku: sampleProductData?.inventory?.sku,
         status: ProductStatus.DRAFT,
         visibility: ProductVisibility.VISIBLE,
         featured: false,
         productType: productType === 'simple' ? ProductType.SIMPLE : ProductType.VARIABLE,
-        price: sampleProductData?.general?.regularPrice,
-        salePrice: sampleProductData?.general?.salePrice,
-        saleStart: sampleProductData?.general?.startDate,
-        saleEnd: sampleProductData?.general?.endDate,
+        price: Number(sampleProductData?.general?.regularPrice),
+        downloadable: false,
+        virtual: false,
+        length: Number(sampleProductData?.shipping?.length),
+        width: Number(sampleProductData?.shipping?.width),
+        height: Number(sampleProductData?.shipping?.depth),
+        weight: Number(sampleProductData?.shipping?.weight),
         stockStatus: sampleProductData?.inventory?.stockStatus as StockStatus,
         manageStock: sampleProductData?.inventory?.trackStock,
-        stockQuantity: sampleProductData?.inventory?.quantity,
-        weight: sampleProductData?.shipping?.weight,
-        length: sampleProductData?.shipping?.length,
-        width: sampleProductData?.shipping?.width,
-        height: sampleProductData?.shipping?.depth,
-        virtual: false,
-        downloadable: false,
-        reviews: sampleProductData?.advanced?.enableReviews
+        stockQuantity: Number(sampleProductData?.inventory?.quantity),
+        salePrice: Number(sampleProductData?.general?.salePrice),
+        saleStart: sampleProductData?.general?.startDate,
+        saleEnd: sampleProductData?.general?.endDate,
+        regularPrice: Number(sampleProductData?.general?.regularPrice),
+        enabledReviews: sampleProductData?.advanced?.enableReviews,
+        purchaseNote: sampleProductData?.advanced?.purchaseNote,
+        productBrand: selectedBrand,
+        categories: selectedCategory
+    }
+
+
+    const handlePublishProduct = async () => {
+        Swal.fire({
+            title: 'Publishing product...',
+            text: 'Please wait while we publish the product',
+            icon: 'info',
+            confirmButtonText: 'OK',
+        })
+        const imageUrls: string[] = []
+        if (images.length > 0) {
+            const results = await Promise.all(
+                images.map(async (file) => {
+                    const formData = new FormData()
+                    formData.append('file', file)
+                    const res = await fetch('/api/upload-image', { method: 'POST', body: formData })
+                    const data = await res.json()
+                    return data?.url ?? null
+                })
+            )
+            imageUrls.push(...results.filter((url): url is string => url != null))
+        }
+
+        const descriptionHtmlWithImgBB = await uploadHtmlImagesToImgBB(productDescriptionHtml)
+        const shortDescriptionHtmlWithImgBB = await uploadHtmlImagesToImgBB(productShortDescriptionHtml)
+
+        const payload = {
+            ...productData,
+            descriptionHtml: descriptionHtmlWithImgBB,
+            shortDescriptionHtml: shortDescriptionHtmlWithImgBB,
+            images: imageUrls
+        }
+        const res = await fetch('/api/product', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+        })
+        const data = await res.json()
+        if (data.success) {
+            Swal.fire({
+                title: 'Product created successfully',
+                text: data.message,
+                icon: 'success',
+                confirmButtonText: 'OK',
+            })
+        } else {
+            Swal.fire({
+                title: 'Product creation failed',
+                text: data.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+            })
+        }
     }
 
 
@@ -95,7 +182,7 @@ const AddProductPage = () => {
                             }
                             {
                                 productType === 'variable' && (
-                                    <VariableProductTable />
+                                    <VariableProductTable setSampleProductData={setSampleProductData} />
                                 )
                             }
                         </div>
@@ -107,13 +194,13 @@ const AddProductPage = () => {
                         <div className='text-base border-b border-b-black/30 pb-2'>
                             Publish
                         </div>
-                        <button type='button' className='border border-primary bg-white text-primary hover:bg-primary hover:text-white transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 cursor-pointer px-4 py-2 rounded-sm text-xs w-fit mt-1 ml-auto'>
+                        <button onClick={() => handlePublishProduct()} type='button' className='border border-primary bg-white text-primary hover:bg-primary hover:text-white transition-all duration-200 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 cursor-pointer px-4 py-2 rounded-sm text-xs w-fit mt-1 ml-auto'>
                             Publish
                         </button>
                     </div>
                     <ProductFeatureImage setFeaturedImage={setFeaturedImage} />
                     <ProductGallery setGalleryImages={setGalleryImages} />
-                    <ProductCategories />
+                    <ProductCategories selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
                     <ProductTags tags={tags} setTags={setTags} />
                     <ProductBrand setSelectedBrand={setSelectedBrand} />
                 </aside>

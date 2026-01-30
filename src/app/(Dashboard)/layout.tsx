@@ -24,7 +24,7 @@ export default function DashboardLayout({
             >
                 <SessionProvider>
                     <TanstackProvider>
-                        <div className="flex items-start h-dvh relative">
+                        <div className="flex items-start h-dvh relative overflow-x-hidden">
                             {/* Checkbox cachée pour contrôler l'état de la sidebar */}
                             <label htmlFor="sidebar-toggle" className="sr-only" >Sidebar Toggle</label>
                             <input type="checkbox" id="sidebar-toggle" className="hidden peer" defaultChecked />

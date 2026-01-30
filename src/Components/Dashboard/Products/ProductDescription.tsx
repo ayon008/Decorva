@@ -559,6 +559,7 @@ const ProductDescription = ({
             }),
             Color,
             Image.configure({
+                allowBase64: false,
                 HTMLAttributes: {
                     class: 'max-w-full h-auto my-4 rounded-sm',
                 },
@@ -595,7 +596,7 @@ const ProductDescription = ({
         }
 
         const htmlContent = editor.getHTML()
-        
+
         // Ne logger que si le contenu a réellement changé
         if (htmlContent === previousContentRef.current) {
             return

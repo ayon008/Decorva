@@ -1,23 +1,27 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
-import { Link, Box, ShieldCheck, Tag, Settings, Truck, List } from 'lucide-react'
+import { Link, Box, ShieldCheck, Tag, Truck, List } from 'lucide-react'
 import React from 'react'
-import General from './General'
 import Inventory from './Inventory'
 import Shipping from './Shipping'
 import LinkedProducts from './LinkedProducts'
 import Attributes from './Attributes'
 import Advanced from './Advanced'
 import { useState } from 'react'
+import Variations from './Variations'
 
-const VariableProductTable = () => {
+const VariableProductTable = ({ setSampleProductData }: { setSampleProductData: (data: any) => void }) => {
     const [activeTab, setActiveTab] = useState<number>(1)
+    const [inventoryData, setInventoryDataState] = useState<any>(null);
+    const [shippingData, setShippingDataState] = useState<any>(null);
+    const [linkedProductsData, setLinkedProductsDataState] = useState<any>(null);
+    const [attributesData, setAttributesDataState] = useState<any>({});
+    const [advancedData, setAdvancedDataState] = useState<any>(null);
+
+
     return (
         <>
             <div className='w-[30%] border-r border-black/30 bg-[#FAFAFA]'>
-                {/* <div className={`flex items-center pl-2 py-2 gap-1 border-b border-black/30 cursor-pointer ${activeTab === 0 ? 'bg-[#EEEEEE] text-black/80' : 'bg-[#FAFAFA] text-primary'}`} onClick={() => setActiveTab(0)}>
-                    <Settings className='w-3 h-3' />
-                    <span>General</span>
-                </div> */}
                 <div className={`flex items-center pl-2 py-2 gap-1 border-b border-black/30 cursor-pointer ${activeTab === 1 ? 'bg-[#EEEEEE] text-black/80' : 'bg-[#FAFAFA] text-primary'}`} onClick={() => setActiveTab(1)}>
                     <Box className='w-3 h-3' />
                     <span>Inventory</span>
@@ -45,33 +49,33 @@ const VariableProductTable = () => {
             </div>
             <div className='w-[70%] pl-2'>
                 {
-                    activeTab === 0 && <>
-                        <General />
-                    </>
-                }
-                {
                     activeTab === 1 && <>
-                        <Inventory />
+                        <Inventory setInventoryData={setInventoryDataState} />
                     </>
                 }
                 {
                     activeTab === 2 && <>
-                        <Shipping />
+                        <Shipping setShippingData={setShippingDataState} />
                     </>
                 }
                 {
                     activeTab === 3 && <>
-                        <LinkedProducts />
+                        <LinkedProducts setLinkedProductsData={setLinkedProductsDataState} />
                     </>
                 }
                 {
                     activeTab === 4 && <>
-                        <Attributes />
+                        <Attributes setAttributesData={setAttributesDataState} />
+                    </>
+                }
+                {
+                    activeTab === 5 && <>
+                        <Variations />
                     </>
                 }
                 {
                     activeTab === 6 && <>
-                        <Advanced />
+                        <Advanced setAdvancedData={setAdvancedDataState} />
                     </>
                 }
             </div>

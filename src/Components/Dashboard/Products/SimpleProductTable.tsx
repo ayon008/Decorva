@@ -16,7 +16,7 @@ const SimpleProductTable = ({ setSampleProductData }: { setSampleProductData: (d
     const [inventoryData, setInventoryDataState] = useState<any>(null);
     const [shippingData, setShippingDataState] = useState<any>(null);
     const [linkedProductsData, setLinkedProductsDataState] = useState<any>(null);
-    const [attributesData, setAttributesDataState] = useState<any>(null);
+    const [attributesData, setAttributesDataState] = useState<any>({});
     const [advancedData, setAdvancedDataState] = useState<any>(null);
 
     const setGeneralData = (data: any) => {

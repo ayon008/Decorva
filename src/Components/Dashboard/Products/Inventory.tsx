@@ -1,4 +1,5 @@
 "use client";
+import { StockStatus } from '@prisma/client';
 import React, { useState, useEffect } from 'react'
 
 export type InventoryData = {
@@ -37,6 +38,7 @@ const Inventory = ({ setInventoryData }: { setInventoryData: (data: InventoryDat
                     className='border px-2 py-1 ml-auto border-black/30 rounded-sm max-w-[300px] w-full'
                     value={sku}
                     onChange={(e) => setSku(e.target.value)}
+                    required
                 />
             </div>
             <div className='flex items-center gap-6'>
@@ -71,15 +73,15 @@ const Inventory = ({ setInventoryData }: { setInventoryData: (data: InventoryDat
                 <label htmlFor="inventory" className='text-xs'>Stock Status</label>
                 <div className='flex flex-col items-start gap-2 w-full max-w-[300px] ml-auto'>
                     <div className='flex items-center gap-2'>
-                        <input type='radio' id='in-stock' name='stock-status' className='w-3 h-3 cursor-pointer' checked={stockStatus === 'in-stock'} onChange={() => setStockStatus('in-stock')} />
+                        <input type='radio' id='in-stock' name='stock-status' className='w-3 h-3 cursor-pointer' checked={stockStatus === StockStatus.INSTOCK} onChange={() => setStockStatus(StockStatus.INSTOCK)} />
                         <label htmlFor='in-stock' className='text-sm'>In Stock</label>
                     </div>
                     <div className='flex items-center gap-2'>
-                        <input type='radio' id='out-of-stock' name='stock-status' className='w-3 h-3 cursor-pointer' checked={stockStatus === 'out-of-stock'} onChange={() => setStockStatus('out-of-stock')} />
+                        <input type='radio' id='out-of-stock' name='stock-status' className='w-3 h-3 cursor-pointer' checked={stockStatus === StockStatus.OUTOFSTOCK} onChange={() => setStockStatus(StockStatus.OUTOFSTOCK)} />
                         <label htmlFor='out-of-stock' className='text-sm'>Out of Stock</label>
                     </div>
                     <div className='flex items-center gap-2'>
-                        <input type='radio' id='low-stock' name='stock-status' className='w-3 h-3 cursor-pointer' checked={stockStatus === 'low-stock'} onChange={() => setStockStatus('low-stock')} />
+                        <input type='radio' id='low-stock' name='stock-status' className='w-3 h-3 cursor-pointer' checked={stockStatus === StockStatus.ONBACKORDER} onChange={() => setStockStatus(StockStatus.ONBACKORDER)} />
                         <label htmlFor='low-stock' className='text-sm'>Low Stock</label>
                     </div>
                 </div>

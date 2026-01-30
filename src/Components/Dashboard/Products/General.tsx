@@ -1,11 +1,12 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import React, { useState, useEffect } from 'react'
 
 export type GeneralData = {
     regularPrice: string
     salePrice: string
+    /** ISO 8601 DateTime string for Prisma DateTime */
     startDate: string
+    /** ISO 8601 DateTime string for Prisma DateTime */
     endDate: string
 }
 
@@ -16,12 +17,15 @@ const General = ({ setGeneralData }: { setGeneralData: (data: GeneralData) => vo
     const [startDate, setStartDate] = useState<string>('')
     const [endDate, setEndDate] = useState<string>('')
 
+    const toDateTimeISO = (value: string) =>
+        value ? new Date(value).toISOString() : ''
+
     useEffect(() => {
         setGeneralData({
             regularPrice,
             salePrice,
-            startDate,
-            endDate,
+            startDate: toDateTimeISO(startDate),
+            endDate: toDateTimeISO(endDate),
         })
     }, [regularPrice, salePrice, startDate, endDate, setGeneralData])
 
@@ -53,23 +57,19 @@ const General = ({ setGeneralData }: { setGeneralData: (data: GeneralData) => vo
                 show && (
                     <div className='flex flex-col gap-4 max-w-[300px] w-full ml-auto'>
                         <input
-                            type="text"
+                            type="datetime-local"
                             id="start-date"
-                            placeholder='Start date'
+                            aria-label="Sale start date and time"
                             className='border px-2 py-1 border-black/30 rounded-sm w-full'
-                            value={startDate}
-                            onFocus={(e) => { e.currentTarget.type = "date"; }}
-                            onBlur={(e) => { if (!e.currentTarget.value) e.currentTarget.type = "text"; }}
+                            value={startDate.includes('T') ? startDate.slice(0, 16) : startDate}
                             onChange={(e) => setStartDate(e.target.value)}
                         />
                         <input
-                            type="text"
+                            type="datetime-local"
                             id="end-date"
-                            placeholder='End date'
+                            aria-label="Sale end date and time"
                             className='border px-2 py-1 border-black/30 rounded-sm w-full'
-                            value={endDate}
-                            onFocus={(e) => { e.currentTarget.type = "date"; }}
-                            onBlur={(e) => { if (!e.currentTarget.value) e.currentTarget.type = "text"; }}
+                            value={endDate.includes('T') ? endDate.slice(0, 16) : endDate}
                             onChange={(e) => setEndDate(e.target.value)}
                         />
                     </div>

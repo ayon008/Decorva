@@ -4,7 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import React, { useState } from 'react'
 import Swal from 'sweetalert2';
 
-const ProductCategories = () => {
+const ProductCategories = ({ selectedCategory, setSelectedCategory }: { selectedCategory: string[], setSelectedCategory: (category: string[]) => void }) => {
     const [newCategory, setNewCategory] = useState<boolean>(false);
 
 
@@ -16,6 +16,8 @@ const ProductCategories = () => {
             return data.data;
         }
     })
+
+    console.log(categories);
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -44,13 +46,19 @@ const ProductCategories = () => {
                     text: data.message,
                 });
             }
-        } catch (error) {
+        } catch {
             Swal.fire({
                 icon: 'error',
                 title: 'Oops...',
                 text: 'Something went wrong!',
             });
         }
+    }
+
+    const onChange = (e: React.FormEvent<HTMLFormElement>) => {
+        const formData = new FormData(e.currentTarget);
+        const ids = formData.getAll('category') as string[];
+        setSelectedCategory(ids);
     }
 
 
@@ -60,17 +68,25 @@ const ProductCategories = () => {
                 Product Categories
             </div>
             <div className='mt-1'>
-                <div className='flex flex-col gap-2 border border-black/30 rounded-sm p-2'>
+                <form onChange={(event) => onChange(event)} className='flex flex-col gap-2 border border-black/30 rounded-sm p-2'>
                     <span className='text-xs cursor-pointer'>All Categories</span>
                     {
-                        !isLoading && categories?.map((category: any, index: number) => (
-                            <label key={index} htmlFor={category.id} className='flex items-center gap-2 cursor-pointer'>
-                                <input key={index} id={category.id} type='checkbox' className='w-3 h-3' title={category.name} />
+                        !isLoading && categories?.map((category: any) => (
+                            <label key={category.id} htmlFor={category.id} className='flex items-center gap-2 cursor-pointer'>
+                                <input
+                                    name='category'
+                                    value={category.id}
+                                    id={category.id}
+                                    type='checkbox'
+                                    className='w-3 h-3'
+                                    title={category.name}
+                                    checked={selectedCategory.includes(category.id)}
+                                />
                                 <span className='text-xs'>{category.name}</span>
                             </label>
                         ))
                     }
-                </div>
+                </form>
             </div>
             <div className='text-primary cursor-pointer text-xs' onClick={() => setNewCategory(!newCategory)}>
                 + Add new category

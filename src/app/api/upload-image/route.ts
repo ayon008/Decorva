@@ -25,6 +25,8 @@ export async function POST(req: Request) {
 
     const data = await imgbbRes.json()
 
+    console.log(data.data.url, 'data.data.url');
+
     if (!data.success) {
         return NextResponse.json(
             { error: "ImgBB upload failed" },
