@@ -1,12 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Swal from 'sweetalert2';
 
-const ProductCategories = ({ selectedCategory, setSelectedCategory }: { selectedCategory: string[], setSelectedCategory: (category: string[]) => void }) => {
+const ProductCategories = ({
+    selectedCategory,
+    setSelectedCategory,
+    defaultSelectedCategoryIds = [],
+}: {
+    selectedCategory: string[];
+    setSelectedCategory: (category: string[]) => void;
+    defaultSelectedCategoryIds?: string[];
+}) => {
     const [newCategory, setNewCategory] = useState<boolean>(false);
+    const hasSyncedDefaultRef = useRef(false);
 
+    // Sync selected categories when product loads (edit mode)
+    useEffect(() => {
+        if (!defaultSelectedCategoryIds?.length || hasSyncedDefaultRef.current) return;
+        hasSyncedDefaultRef.current = true;
+        queueMicrotask(() => setSelectedCategory(defaultSelectedCategoryIds));
+    }, [defaultSelectedCategoryIds, setSelectedCategory]);
 
     const { data: categories, isLoading, refetch } = useQuery({
         queryKey: ['categories'],
@@ -16,8 +31,6 @@ const ProductCategories = ({ selectedCategory, setSelectedCategory }: { selected
             return data.data;
         }
     })
-
-    console.log(categories);
 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();

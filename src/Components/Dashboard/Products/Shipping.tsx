@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 export type ShippingData = {
     weight: string
@@ -9,12 +9,25 @@ export type ShippingData = {
     shippingClass: string
 }
 
-const Shipping = ({ setShippingData }: { setShippingData: (data: ShippingData) => void }) => {
+const Shipping = ({ setShippingData, defaultData }: { setShippingData: (data: ShippingData) => void; defaultData?: Partial<ShippingData> | null }) => {
     const [weight, setWeight] = useState('')
     const [width, setWidth] = useState('')
     const [height, setHeight] = useState('')
     const [depth, setDepth] = useState('')
     const [shippingClass, setShippingClass] = useState('')
+    const hasSyncedRef = useRef(false)
+
+    useEffect(() => {
+        if (!defaultData || hasSyncedRef.current) return
+        hasSyncedRef.current = true
+        queueMicrotask(() => {
+            if (defaultData.weight != null) setWeight(String(defaultData.weight))
+            if (defaultData.width != null) setWidth(String(defaultData.width))
+            if (defaultData.height != null) setHeight(String(defaultData.height))
+            if (defaultData.depth != null) setDepth(String(defaultData.depth))
+            if (defaultData.shippingClass != null) setShippingClass(String(defaultData.shippingClass))
+        })
+    }, [defaultData])
 
     useEffect(() => {
         setShippingData({

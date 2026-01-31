@@ -28,6 +28,7 @@ export async function GET(request: Request,
     try {
         const product = await prisma.product.findUnique({
             where: { id },
+            include: { images: true, categories: true, productBrand: true, tags: true },
         });
         return NextResponse.json({ success: true, product }, { status: 200 });
     }

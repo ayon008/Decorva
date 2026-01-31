@@ -3,12 +3,27 @@
 import Image from "next/image";
 import React, { useEffect, useRef, useState } from "react";
 
-const ProductFeatureImage = ({ setFeaturedImage }: { setFeaturedImage: (file: File) => void }) => {
+const ProductFeatureImage = ({
+  setFeaturedImage,
+  defaultImageUrl = null,
+}: {
+  setFeaturedImage: (file: File) => void;
+  defaultImageUrl?: string | null;
+}) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const previewUrlRef = useRef<string | null>(null);
+  const hasUserSelectedFileRef = useRef(false);
 
   const [featurePreviewUrl, setFeaturePreviewUrl] = useState<string | null>(null);
   const [featureFileName, setFeatureFileName] = useState<string | null>(null);
+
+  // Show default image when product loads (edit mode)
+  useEffect(() => {
+    if (!defaultImageUrl) return;
+    if (hasUserSelectedFileRef.current) return;
+    setFeaturePreviewUrl(defaultImageUrl);
+    setFeatureFileName(null);
+  }, [defaultImageUrl]);
 
   useEffect(() => {
     return () => {
@@ -45,11 +60,13 @@ const ProductFeatureImage = ({ setFeaturedImage }: { setFeaturedImage: (file: Fi
             }
 
             if (!file) {
-              setFeaturePreviewUrl(null);
+              setFeaturePreviewUrl(defaultImageUrl ?? null);
               setFeatureFileName(null);
+              hasUserSelectedFileRef.current = false;
               e.currentTarget.value = "";
               return;
             }
+            hasUserSelectedFileRef.current = true;
             setFeaturedImage(file);
             const url = URL.createObjectURL(file);
             previewUrlRef.current = url;
@@ -63,18 +80,26 @@ const ProductFeatureImage = ({ setFeaturedImage }: { setFeaturedImage: (file: Fi
 
         {featurePreviewUrl ? (
           <div className="w-full mt-1">
-            <Image
-              src={featurePreviewUrl}
-              alt={
-                featureFileName
-                  ? `Product feature preview: ${featureFileName}`
-                  : "Product feature preview"
-              }
-              width={1200}
-              height={400}
-              unoptimized
-              className="w-full h-auto aspect-square object-cover border border-black/30 rounded-sm"
-            />
+            {featurePreviewUrl.startsWith("blob:") || featurePreviewUrl.startsWith("/") ? (
+              <Image
+                src={featurePreviewUrl}
+                alt={
+                  featureFileName
+                    ? `Product feature preview: ${featureFileName}`
+                    : "Product feature preview"
+                }
+                width={1200}
+                height={400}
+                unoptimized
+                className="w-full h-auto aspect-square object-cover border border-black/30 rounded-sm"
+              />
+            ) : (
+              <img
+                src={featurePreviewUrl}
+                alt={featureFileName ? `Product feature preview: ${featureFileName}` : "Product feature preview"}
+                className="w-full h-auto aspect-square object-cover border border-black/30 rounded-sm"
+              />
+            )}
             <div className="flex items-center justify-between mt-2">
               <button
                 type="button"
@@ -91,7 +116,8 @@ const ProductFeatureImage = ({ setFeaturedImage }: { setFeaturedImage: (file: Fi
                     URL.revokeObjectURL(previewUrlRef.current);
                     previewUrlRef.current = null;
                   }
-                  setFeaturePreviewUrl(null);
+                  hasUserSelectedFileRef.current = false;
+                  setFeaturePreviewUrl(defaultImageUrl ?? null);
                   setFeatureFileName(null);
                   if (fileInputRef.current) fileInputRef.current.value = "";
                 }}

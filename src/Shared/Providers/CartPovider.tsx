@@ -11,6 +11,7 @@ export const CartContext = createContext<{
     cartItemsCount: () => number;
     itemsCount: number;
     handleRemoveFromCart: (id: string) => void;
+    handleRemoveItem: (id: string) => void;
 }>({
     cartOpen: false,
     setCartOpen: () => { },
@@ -18,7 +19,8 @@ export const CartContext = createContext<{
     getCartItems: (): CartItem[] => [],
     cartItemsCount: () => 0,
     itemsCount: 0,
-    handleRemoveFromCart: (id: string) => { }
+    handleRemoveFromCart: (id: string) => { },
+    handleRemoveItem: (id: string) => { }
 });
 
 const CartProvider = ({ children }: { children: React.ReactNode }) => {
@@ -78,7 +80,6 @@ const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             let cartItemsArray = JSON.parse(cartItems) as CartItem[];
-
             cartItemsArray = cartItemsArray
                 .map((item) =>
                     item.id === id
@@ -96,12 +97,22 @@ const CartProvider = ({ children }: { children: React.ReactNode }) => {
 
 
     const handleRemoveItem = (id: string) => {
-        
+        if (typeof window === "undefined") return;
+        const cartItems = localStorage.getItem(cartKey);
+        if (!cartItems) return;
+        try {
+            let cartItemsArray = JSON.parse(cartItems) as CartItem[];
+            cartItemsArray = cartItemsArray.filter((item) => item.id !== id);
+            localStorage.setItem(cartKey, JSON.stringify(cartItemsArray));
+            setItemsCount(cartItemsCount());
+        } catch (error) {
+            console.error("Failed to remove item from cart", error);
+        }
     }
 
 
     return (
-        <CartContext.Provider value={{ cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart: handleRemoveFromCart }}>
+        <CartContext.Provider value={{ cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart: handleRemoveFromCart, handleRemoveItem: handleRemoveItem }}>
             {children}
         </CartContext.Provider>
     )

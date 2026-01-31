@@ -1,6 +1,6 @@
 "use client";
 import { StockStatus } from '@prisma/client';
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 export type InventoryData = {
     sku: string
@@ -10,12 +10,25 @@ export type InventoryData = {
     soldIndividually: boolean
 }
 
-const Inventory = ({ setInventoryData }: { setInventoryData: (data: InventoryData) => void }) => {
+const Inventory = ({ setInventoryData, defaultData }: { setInventoryData: (data: InventoryData) => void; defaultData?: Partial<InventoryData> | null }) => {
     const [trackStock, setTrackStock] = useState(false);
     const [sku, setSku] = useState('');
     const [quantity, setQuantity] = useState('');
     const [stockStatus, setStockStatus] = useState('');
     const [soldIndividually, setSoldIndividually] = useState(false);
+    const hasSyncedRef = useRef(false);
+
+    useEffect(() => {
+        if (!defaultData || hasSyncedRef.current) return
+        hasSyncedRef.current = true
+        queueMicrotask(() => {
+            if (defaultData.sku != null) setSku(String(defaultData.sku))
+            if (defaultData.trackStock != null) setTrackStock(defaultData.trackStock)
+            if (defaultData.quantity != null) setQuantity(String(defaultData.quantity))
+            if (defaultData.stockStatus != null) setStockStatus(String(defaultData.stockStatus))
+            if (defaultData.soldIndividually != null) setSoldIndividually(defaultData.soldIndividually)
+        })
+    }, [defaultData])
 
     useEffect(() => {
         setInventoryData({

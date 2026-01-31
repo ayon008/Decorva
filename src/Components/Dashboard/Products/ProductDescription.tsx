@@ -526,13 +526,16 @@ const ProductDescription = ({
     heading,
     height,
     onChange,
+    defaultContent = '',
 }: {
     heading: string
     height: string
     onChange?: (data: { productDescription: string; productDescriptionHtml: string }) => void
+    defaultContent?: string
 }) => {
     const [pasteAsTextMode, setPasteAsTextMode] = useState(false)
     const pasteModeRef = useRef(pasteAsTextMode)
+    const initialContentSetRef = useRef(false)
     useEffect(() => {
         pasteModeRef.current = pasteAsTextMode
     }, [pasteAsTextMode])
@@ -565,7 +568,7 @@ const ProductDescription = ({
                 },
             }),
         ],
-        content: '',
+        content: defaultContent || '',
         immediatelyRender: false,
         editorProps: {
             attributes: {
@@ -613,6 +616,15 @@ const ProductDescription = ({
         onChange?.(data)
         console.log('=== Editor Data Changed ===', data)
     }, [editor, onChange])
+
+    // Sync editor content when defaultContent is set (e.g. product loaded in edit mode)
+    useEffect(() => {
+        if (!editor || !defaultContent) return
+        if (initialContentSetRef.current) return
+        initialContentSetRef.current = true
+        editor.commands.setContent(defaultContent, { emitUpdate: false })
+        previousContentRef.current = defaultContent
+    }, [editor, defaultContent])
 
     // Logger les données quand l'éditeur change (onChange)
     useEffect(() => {

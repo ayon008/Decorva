@@ -9,7 +9,9 @@ import ProductTags from '@/Components/Dashboard/Products/ProductTags';
 import SimpleProductTable from '@/Components/Dashboard/Products/SimpleProductTable';
 import VariableProductTable from '@/Components/Dashboard/Products/VariableProduct';
 import { ProductStatus, ProductType, ProductVisibility, StockStatus } from '@prisma/client';
-import React, { useState } from 'react'
+import { useQuery } from '@tanstack/react-query';
+import { useSearchParams } from 'next/navigation';
+import React, { useEffect, useState } from 'react'
 import Swal from 'sweetalert2';
 
 /** Finds img tags with data: or blob: src, uploads each to ImgBB, replaces src with ImgBB URL. */
@@ -151,6 +153,35 @@ const AddProductPage = () => {
         }
     }
 
+    const searchParams = useSearchParams();
+    const productId = searchParams.get('edit');
+
+    const { data: product } = useQuery({
+        queryKey: ['product', productId],
+        queryFn: async () => {
+            const response = await fetch(`/api/product/${productId}`);
+            const data = await response.json();
+            return data.product;
+        },
+        enabled: !!productId,
+    });
+
+    // Sync form state when product loads (edit mode). Batched in queueMicrotask to satisfy React Compiler.
+    useEffect(() => {
+        if (!product) return;
+        queueMicrotask(() => {
+            setProductName(product.name ?? '');
+            setProductDescription(product.descriptionText ?? '');
+            setProductShortDescription(product.shortDescriptionText ?? '');
+            setProductDescriptionHtml(product.descriptionHtml ?? '');
+            setProductShortDescriptionHtml(product.shortDescriptionHtml ?? '');
+            setProductType(product.productType === 'VARIABLE' ? 'variable' : 'simple');
+            setSelectedBrand(product.productBrandId ?? '');
+            setSelectedCategory(product.categoryIds ?? []);
+            setTags(product.tags?.map((t: { name: string }) => t.name) ?? []);
+        });
+    }, [product]);
+
 
 
     return (
@@ -159,7 +190,7 @@ const AddProductPage = () => {
             <div className='w-full flex items-start justify-between gap-6'>
                 <aside className='w-3/4 flex flex-col gap-4'>
                     <input type="text" placeholder='Product name' className='w-full p-2 border border-black/30 rounded-sm' value={productName} onChange={(e) => setProductName(e.target.value)} />
-                    <ProductDescription heading="Product Description" height="400px" onChange={handleProductDescriptionChange} />
+                    <ProductDescription heading="Product Description" height="400px" onChange={handleProductDescriptionChange} defaultContent={productDescriptionHtml} />
                     {/* Table */}
                     <div className='border border-black/30'>
                         <div className='flex items-center border-b border-black/30 gap-2 py-2 px-3'>
@@ -177,7 +208,7 @@ const AddProductPage = () => {
                         <div className='flex items-stretch justify-between'>
                             {
                                 productType === 'simple' && (
-                                    <SimpleProductTable setSampleProductData={setSampleProductData} />
+                                    <SimpleProductTable setSampleProductData={setSampleProductData} defaultProductData={product} />
                                 )
                             }
                             {
@@ -187,7 +218,7 @@ const AddProductPage = () => {
                             }
                         </div>
                     </div>
-                    <ProductDescription heading="Product Short Description" height="300px" onChange={handleShortDescriptionChange} />
+                    <ProductDescription heading="Product Short Description" height="300px" onChange={handleShortDescriptionChange} defaultContent={productShortDescriptionHtml} />
                 </aside>
                 <aside className='w-1/4 flex flex-col gap-4'>
                     <div className='bg-white p-3 flex flex-col gap-2 border border-black/30'>
@@ -198,11 +229,11 @@ const AddProductPage = () => {
                             Publish
                         </button>
                     </div>
-                    <ProductFeatureImage setFeaturedImage={setFeaturedImage} />
-                    <ProductGallery setGalleryImages={setGalleryImages} />
-                    <ProductCategories selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} />
+                    <ProductFeatureImage setFeaturedImage={setFeaturedImage} defaultImageUrl={product?.images?.[0]?.url ?? null} />
+                    <ProductGallery setGalleryImages={setGalleryImages} defaultImageUrls={product?.images?.map((img: { id: string; url: string }) => ({ id: img.id, url: img.url })) ?? []} />
+                    <ProductCategories selectedCategory={selectedCategory} setSelectedCategory={setSelectedCategory} defaultSelectedCategoryIds={product?.categoryIds ?? []} />
                     <ProductTags tags={tags} setTags={setTags} />
-                    <ProductBrand setSelectedBrand={setSelectedBrand} />
+                    <ProductBrand selectedBrand={selectedBrand} setSelectedBrand={setSelectedBrand} defaultSelectedBrandId={product?.productBrandId ?? ''} />
                 </aside>
             </div>
         </section>

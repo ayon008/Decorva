@@ -7,7 +7,7 @@ import useCart from '../Hooks/useCart';
 
 
 const SideCartItems = ({ item }: { item: CartItem }) => {
-    const { handleAddToCart, handleRemoveFromCart } = useCart();
+    const { handleAddToCart, handleRemoveFromCart, handleRemoveItem } = useCart();
     // const image = item.images?.[0]?.src || item.image;
     // const name = item.name || item.title;
 
@@ -218,7 +218,7 @@ const SideCartItems = ({ item }: { item: CartItem }) => {
                     </span>
                     <button
                         title='Remove item'
-                        onClick={() => handleRemoveFromCart(item?.id)}
+                        onClick={() => handleRemoveItem(item?.id)}
                         type='button'
                         // disabled={updating}
                         className='cursor-pointer hover:bg-red-100 rounded p-1 disabled:opacity-30 disabled:cursor-not-allowed'

@@ -1,12 +1,27 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { useQuery } from '@tanstack/react-query';
-import React, { useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import Swal from 'sweetalert2';
 
-const ProductBrand = ({ setSelectedBrand }: { setSelectedBrand: (brand: string) => void }) => {
+const ProductBrand = ({
+    selectedBrand,
+    setSelectedBrand,
+    defaultSelectedBrandId = '',
+}: {
+    selectedBrand: string;
+    setSelectedBrand: (brand: string) => void;
+    defaultSelectedBrandId?: string;
+}) => {
     const [newBrand, setNewBrand] = useState<boolean>(false);
+    const hasSyncedDefaultRef = useRef(false);
 
+    // Sync selected brand when product loads (edit mode)
+    useEffect(() => {
+        if (!defaultSelectedBrandId || hasSyncedDefaultRef.current) return;
+        hasSyncedDefaultRef.current = true;
+        queueMicrotask(() => setSelectedBrand(defaultSelectedBrandId));
+    }, [defaultSelectedBrandId, setSelectedBrand]);
 
     const { data: brands, isLoading, refetch } = useQuery({
         queryKey: ['brands'],
@@ -54,8 +69,17 @@ const ProductBrand = ({ setSelectedBrand }: { setSelectedBrand: (brand: string) 
                     <span className='text-xs cursor-pointer'>All Brands</span>
                     {
                         !isLoading && brands?.data?.map((brand: any, index: number) => (
-                            <label key={index} htmlFor={brand?.id} className='flex items-center gap-2 cursor-pointer'>
-                                <input id={brand?.id} type='radio' name='productBrand' className='w-3 h-3' title={brand?.name} onChange={() => setSelectedBrand(brand?.id)} />
+                            <label key={brand?.id ?? index} htmlFor={brand?.id} className='flex items-center gap-2 cursor-pointer'>
+                                <input
+                                    id={brand?.id}
+                                    type='radio'
+                                    name='productBrand'
+                                    className='w-3 h-3'
+                                    title={brand?.name}
+                                    value={brand?.id}
+                                    checked={selectedBrand === brand?.id}
+                                    onChange={() => setSelectedBrand(brand?.id ?? '')}
+                                />
                                 <span className='text-xs'>{brand?.name}</span>
                             </label>
                         ))

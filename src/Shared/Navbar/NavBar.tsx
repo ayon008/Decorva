@@ -86,7 +86,7 @@ const NavBar = () => {
                                 {
                                     !isLoading && categories?.length > 0 && categories?.map((category: { id: string, name: string, slug: string }) => (
                                         <li key={category.id}>
-                                            <Link onClick={() => setIsCategoriesOpen(false)} href={`/shop/${category?.slug}`}>
+                                            <Link onClick={() => setIsCategoriesOpen(false)} className='capitalize' href={`/shop/${category?.slug}`}>
                                                 {category.name}
                                             </Link>
                                         </li>

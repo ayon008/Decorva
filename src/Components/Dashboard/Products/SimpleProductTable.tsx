@@ -1,16 +1,51 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 import { Link, Box, ShieldCheck, Tag, Settings, Truck } from 'lucide-react'
-import React from 'react'
+import React, { useMemo, useState, useEffect } from 'react'
 import General from './General'
 import Inventory from './Inventory'
 import Shipping from './Shipping'
 import LinkedProducts from './LinkedProducts'
 import Attributes from './Attributes'
 import Advanced from './Advanced'
-import { useState, useEffect } from 'react'
 
-const SimpleProductTable = ({ setSampleProductData }: { setSampleProductData: (data: any) => void }) => {
+function buildDefaultsFromProduct(product: any) {
+    if (!product) return { general: null, inventory: null, shipping: null, advanced: null }
+    const toLocal = (d: string | Date | null | undefined) => {
+        if (d == null) return ''
+        const date = typeof d === 'string' ? new Date(d) : d
+        if (Number.isNaN(date.getTime())) return ''
+        return date.toISOString().slice(0, 16)
+    }
+    return {
+        general: {
+            regularPrice: product.regularPrice != null ? String(product.regularPrice) : '',
+            salePrice: product.salePrice != null ? String(product.salePrice) : '',
+            startDate: toLocal(product.saleStart),
+            endDate: toLocal(product.saleEnd),
+        },
+        inventory: {
+            sku: product.sku ?? '',
+            trackStock: product.manageStock ?? false,
+            quantity: product.stockQuantity != null ? String(product.stockQuantity) : '',
+            stockStatus: product.stockStatus ?? '',
+            soldIndividually: false,
+        },
+        shipping: {
+            weight: product.weight != null ? String(product.weight) : '',
+            width: product.width != null ? String(product.width) : '',
+            height: product.height != null ? String(product.height) : '',
+            depth: product.length != null ? String(product.length) : '',
+            shippingClass: '',
+        },
+        advanced: {
+            purchaseNote: product.purchaseNote ?? '',
+            enableReviews: product.enabledReviews ?? false,
+        },
+    }
+}
+
+const SimpleProductTable = ({ setSampleProductData, defaultProductData }: { setSampleProductData: (data: any) => void; defaultProductData?: any }) => {
     const [activeTab, setActiveTab] = useState<number>(0);
     const [generalData, setGeneralDataState] = useState<any>(null);
     const [inventoryData, setInventoryDataState] = useState<any>(null);
@@ -19,30 +54,14 @@ const SimpleProductTable = ({ setSampleProductData }: { setSampleProductData: (d
     const [attributesData, setAttributesDataState] = useState<any>({});
     const [advancedData, setAdvancedDataState] = useState<any>(null);
 
-    const setGeneralData = (data: any) => {
-        setGeneralDataState(data);
-        console.log('generalData:', data);
-    };
-    const setInventoryData = (data: any) => {
-        setInventoryDataState(data);
-        console.log('inventoryData:', data);
-    };
-    const setShippingData = (data: any) => {
-        setShippingDataState(data);
-        console.log('shippingData:', data);
-    };
-    const setLinkedProductsData = (data: any) => {
-        setLinkedProductsDataState(data);
-        console.log('linkedProductsData:', data);
-    };
-    const setAttributesData = (data: any) => {
-        setAttributesDataState(data);
-        console.log('attributesData:', data);
-    };
-    const setAdvancedData = (data: any) => {
-        setAdvancedDataState(data);
-        console.log('advancedData:', data);
-    };
+    const defaultData = useMemo(() => buildDefaultsFromProduct(defaultProductData), [defaultProductData])
+
+    const setGeneralData = (data: any) => setGeneralDataState(data)
+    const setInventoryData = (data: any) => setInventoryDataState(data)
+    const setShippingData = (data: any) => setShippingDataState(data)
+    const setLinkedProductsData = (data: any) => setLinkedProductsDataState(data)
+    const setAttributesData = (data: any) => setAttributesDataState(data)
+    const setAdvancedData = (data: any) => setAdvancedDataState(data)
 
     useEffect(() => {
         setSampleProductData({
@@ -86,17 +105,17 @@ const SimpleProductTable = ({ setSampleProductData }: { setSampleProductData: (d
             <div className='w-[70%] pl-2'>
                 {
                     activeTab === 0 && <>
-                        <General setGeneralData={setGeneralData} />
+                        <General setGeneralData={setGeneralData} defaultData={defaultData.general} />
                     </>
                 }
                 {
                     activeTab === 1 && <>
-                        <Inventory setInventoryData={setInventoryData} />
+                        <Inventory setInventoryData={setInventoryData} defaultData={defaultData.inventory} />
                     </>
                 }
                 {
                     activeTab === 2 && <>
-                        <Shipping setShippingData={setShippingData} />
+                        <Shipping setShippingData={setShippingData} defaultData={defaultData.shipping} />
                     </>
                 }
                 {
@@ -111,7 +130,7 @@ const SimpleProductTable = ({ setSampleProductData }: { setSampleProductData: (d
                 }
                 {
                     activeTab === 5 && <>
-                        <Advanced setAdvancedData={setAdvancedData} />
+                        <Advanced setAdvancedData={setAdvancedData} defaultData={defaultData.advanced} />
                     </>
                 }
             </div>

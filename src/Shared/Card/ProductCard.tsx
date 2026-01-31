@@ -13,7 +13,7 @@ import Link from 'next/link';
 const ProductCard = ({ product }: { product: { id: string, images: { url: string }[], name: string, price: number, regularPrice: number, salePrice: number, slug: string } }) => {
 
     return (
-        <Link href={`/product/${product?.slug}`} className='relative w-fit cursor-pointer group'>
+        <Link href={`/product/${product?.slug}`} className='relative w-full max-w-[350px] cursor-pointer group'>
             <div className='relative overflow-hidden'>
                 <Image src={product?.images[0].url || productImage} alt="product" width={272} height={272} className='object-cover aspect-1 w-full h-auto' />
                 <div className='bg-red-500 w-fit h-fit text-white font-normal px-2 rounded-xs absolute top-2 right-2'>-8%</div>

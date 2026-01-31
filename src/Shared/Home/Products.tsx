@@ -16,7 +16,7 @@ const Products = () => {
                 <li className={`uppercase text-sm leading-[24px] border-b-2 font-normal hover:text-primary transition-all duration-300 cursor-pointer ${lora.className} ${active === 2 ? "border-b-primary text-primary" : "text-black border-b-transparent hover:border-b-primary"}`} onClick={() => setActive(2)}>Outdoor Plant Pots</li>
             </ul>
             <div className='mt-6'>
-                <ProductCard />
+                {/* <ProductCard /> */}
             </div>
         </div>
     )

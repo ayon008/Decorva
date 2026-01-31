@@ -11,19 +11,24 @@ const AllProducts = () => {
 
     const params = useParams();
     const category = params.slug;
+
+    const url = category ? `/api/category/${category}` : '/api/product';
+
+
+
     const [priceRange, setPriceRange] = useState<[number, number]>([0, 0]);
 
 
     const { data: categoryProducts, isLoading } = useQuery({
         queryKey: ['categoryProducts', category],
         queryFn: async () => {
-            const response = await fetch(`/api/category/${category}`);
+            const response = await fetch(url);
             const data = await response.json();
-            return data.category?.products;
+            return category ? data.category?.products : data.products;
         },
         staleTime: 60 * 60 * 1000, // Cache for 1 hour
-
     })
+    
     const { minPrice, maxPrice } = useMemo(() => {
         if (!categoryProducts || categoryProducts.length === 0) {
             return { minPrice: 0, maxPrice: 0 };
@@ -58,7 +63,6 @@ const AllProducts = () => {
     const handleChange = (val: [number, number]) => {
         setPriceRange(val);
     }
-
 
 
     // const renderCategories = (categories) => {
@@ -104,7 +108,7 @@ const AllProducts = () => {
         <div className='w-full flex items-start justify-between gap-10'>
             <div className='grid 2xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 items-start w-3/4 gap-6'>
                 {
-                    categoryProducts && categoryProducts.length > 0 && categoryProducts.map((product: { id: string, images: { url: string }[], name: string, price: number, regularPrice: number, salePrice: number, slug: string }) => (
+                    filteredProducts && filteredProducts.length > 0 && filteredProducts.map((product: { id: string, images: { url: string }[], name: string, price: number, regularPrice: number, salePrice: number, slug: string }) => (
                         <ProductCard key={product.id} product={product} />
                     ))
                 }

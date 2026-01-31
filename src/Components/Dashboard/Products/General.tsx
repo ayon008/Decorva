@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 export type GeneralData = {
     regularPrice: string
@@ -10,12 +10,24 @@ export type GeneralData = {
     endDate: string
 }
 
-const General = ({ setGeneralData }: { setGeneralData: (data: GeneralData) => void }) => {
+const General = ({ setGeneralData, defaultData }: { setGeneralData: (data: GeneralData) => void; defaultData?: Partial<GeneralData> | null }) => {
     const [show, setShow] = useState<boolean>(false)
     const [regularPrice, setRegularPrice] = useState<string>('')
     const [salePrice, setSalePrice] = useState<string>('')
     const [startDate, setStartDate] = useState<string>('')
     const [endDate, setEndDate] = useState<string>('')
+    const hasSyncedRef = useRef(false)
+
+    useEffect(() => {
+        if (!defaultData || hasSyncedRef.current) return
+        hasSyncedRef.current = true
+        queueMicrotask(() => {
+            if (defaultData.regularPrice != null) setRegularPrice(String(defaultData.regularPrice))
+            if (defaultData.salePrice != null) setSalePrice(String(defaultData.salePrice))
+            if (defaultData.startDate != null) setStartDate(defaultData.startDate.includes('T') ? defaultData.startDate.slice(0, 16) : defaultData.startDate)
+            if (defaultData.endDate != null) setEndDate(defaultData.endDate.includes('T') ? defaultData.endDate.slice(0, 16) : defaultData.endDate)
+        })
+    }, [defaultData])
 
     const toDateTimeISO = (value: string) =>
         value ? new Date(value).toISOString() : ''

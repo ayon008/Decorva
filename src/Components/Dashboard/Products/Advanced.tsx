@@ -1,14 +1,24 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 
 export type AdvancedData = {
     purchaseNote: string
     enableReviews: boolean
 }
 
-const Advanced = ({ setAdvancedData }: { setAdvancedData: (data: AdvancedData) => void }) => {
+const Advanced = ({ setAdvancedData, defaultData }: { setAdvancedData: (data: AdvancedData) => void; defaultData?: Partial<AdvancedData> | null }) => {
     const [purchaseNote, setPurchaseNote] = useState('')
     const [enableReviews, setEnableReviews] = useState(false)
+    const hasSyncedRef = useRef(false)
+
+    useEffect(() => {
+        if (!defaultData || hasSyncedRef.current) return
+        hasSyncedRef.current = true
+        queueMicrotask(() => {
+            if (defaultData.purchaseNote != null) setPurchaseNote(String(defaultData.purchaseNote))
+            if (defaultData.enableReviews != null) setEnableReviews(defaultData.enableReviews)
+        })
+    }, [defaultData])
 
     useEffect(() => {
         setAdvancedData({ purchaseNote, enableReviews })
