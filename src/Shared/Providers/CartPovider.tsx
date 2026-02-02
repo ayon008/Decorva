@@ -1,5 +1,6 @@
 "use client";
-import React, { createContext, useEffect, useState } from 'react'
+import { useSession } from 'next-auth/react';
+import React, { createContext, useCallback, useEffect, useState } from 'react'
 
 export type CartItem = { id: string; quantity: number; price: number; image: string; name: string };
 
@@ -12,6 +13,7 @@ export const CartContext = createContext<{
     itemsCount: number;
     handleRemoveFromCart: (id: string) => void;
     handleRemoveItem: (id: string) => void;
+    isLoading: boolean;
 }>({
     cartOpen: false,
     setCartOpen: () => { },
@@ -19,100 +21,177 @@ export const CartContext = createContext<{
     getCartItems: (): CartItem[] => [],
     cartItemsCount: () => 0,
     itemsCount: 0,
-    handleRemoveFromCart: (id: string) => { },
-    handleRemoveItem: (id: string) => { }
+    handleRemoveFromCart: () => { },
+    handleRemoveItem: () => { },
+    isLoading: false,
 });
 
-const CartProvider = ({ children }: { children: React.ReactNode }) => {
+const cartKey = process.env.NEXT_PUBLIC_STORAGE_KEY || 'cart';
 
-
-    const [cartOpen, setCartOpen] = useState(false);
-    const cartKey = process.env.NEXT_PUBLIC_STORAGE_KEY || '';
-
-
-    const getCartItems = (): CartItem[] => {
-        if (typeof window === "undefined") return [];
-        const cartItems = localStorage.getItem(cartKey);
-        if (cartItems) {
-            return JSON.parse(cartItems) as CartItem[];
-        }
-        return [];
+function mergeCarts(dbItems: CartItem[], localItems: CartItem[]): CartItem[] {
+    const byId = new Map<string, CartItem>();
+    for (const item of dbItems) {
+        byId.set(item.id, { ...item });
     }
+    for (const item of localItems) {
+        const existing = byId.get(item.id);
+        if (existing) {
+            existing.quantity += item.quantity;
+        } else {
+            byId.set(item.id, { ...item });
+        }
+    }
+    return Array.from(byId.values());
+}
 
-    const [itemsCount, setItemsCount] = useState<number>(0);
+const CartProvider = ({ children }: { children: React.ReactNode }) => {
+    const { data: session, status } = useSession();
+    const [cartOpen, setCartOpen] = useState(false);
+    const [dbCartItems, setDbCartItems] = useState<CartItem[]>([]);
+    const [, setLocalVersion] = useState(0);
+    const [isLoading, setIsLoading] = useState(false);
 
-    const cartItemsCount = (): number => {
-        const items = getCartItems();
-        return items?.reduce((acc, item) => acc + item.quantity, 0) ?? 0;
-    };
+    const isLoggedIn = status === 'authenticated' && !!session?.user?.id;
+
+    const getLocalItems = useCallback((): CartItem[] => {
+        if (typeof window === "undefined") return [];
+        const raw = localStorage.getItem(cartKey);
+        return raw ? (JSON.parse(raw) as CartItem[]) : [];
+    }, []);
+
+    const getCartItems = useCallback((): CartItem[] => {
+        if (typeof window === "undefined") return [];
+        if (isLoggedIn) return dbCartItems;
+        return getLocalItems();
+    }, [isLoggedIn, dbCartItems, getLocalItems]);
+
+    const cartItemsCount = useCallback((): number => {
+        return getCartItems().reduce((acc, item) => acc + item.quantity, 0);
+    }, [getCartItems]);
+
+    const itemsCount = cartItemsCount();
 
     useEffect(() => {
-        if (typeof window === "undefined") return;
-        const raw = localStorage.getItem(cartKey);
-        const items = raw ? (JSON.parse(raw) as CartItem[]) : [];
-        setItemsCount(items.reduce((acc, item) => acc + item.quantity, 0));
-    }, [cartOpen, cartKey]);
+        if (!isLoggedIn) return;
 
-    const handleAddToCart = (product: CartItem) => {
+        const sync = async () => {
+            setIsLoading(true);
+            try {
+                const res = await fetch('/api/cart');
+                const { items: dbItems } = await res.json();
+                const localItems = getLocalItems();
+
+                if (localItems.length > 0) {
+                    const merged = mergeCarts(dbItems ?? [], localItems);
+                    const patchRes = await fetch('/api/cart', {
+                        method: 'PATCH',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ items: merged }),
+                    });
+                    const { items } = await patchRes.json();
+                    setDbCartItems(items ?? []);
+                    localStorage.removeItem(cartKey);
+                } else {
+                    setDbCartItems(dbItems ?? []);
+                }
+            } catch (e) {
+                console.error('Cart sync error:', e);
+                setDbCartItems([]);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+
+        sync();
+    }, [isLoggedIn, getLocalItems]);
+
+    const handleAddToCart = useCallback(async (product: CartItem) => {
         if (typeof window === "undefined") return;
         setCartOpen(true);
-        const cartItems = localStorage.getItem(cartKey);
-        if (cartItems) {
-            const cartItemsArray = JSON.parse(cartItems) as CartItem[];
-            const existingProduct = cartItemsArray.find((item) => item.id === product.id);
-            if (existingProduct) {
-                existingProduct.quantity += product.quantity;
-            } else {
-                cartItemsArray.push(product);
+
+        if (isLoggedIn) {
+            setIsLoading(true);
+            try {
+                const res = await fetch('/api/cart', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(product),
+                });
+                const data = await res.json();
+                setDbCartItems(data.items ?? []);
+            } catch (e) {
+                console.error('Add to cart error:', e);
+            } finally {
+                setIsLoading(false);
             }
-            localStorage.setItem(cartKey, JSON.stringify(cartItemsArray));
-        } else {
-            localStorage.setItem(cartKey, JSON.stringify([product]));
+            return;
         }
-        setItemsCount(cartItemsCount());
-    };
 
-    const handleRemoveFromCart = (id: string) => {
+        const localItems = getLocalItems();
+        const existing = localItems.find((i) => i.id === product.id);
+        const next = existing
+            ? localItems.map((i) => i.id === product.id ? { ...i, quantity: i.quantity + product.quantity } : i)
+            : [...localItems, product];
+        localStorage.setItem(cartKey, JSON.stringify(next));
+        setLocalVersion((v) => v + 1);
+    }, [isLoggedIn, getLocalItems]);
+
+    const handleRemoveFromCart = useCallback(async (id: string) => {
         if (typeof window === "undefined") return;
 
-        const cartItems = localStorage.getItem(cartKey);
-        if (!cartItems) return;
-
-        try {
-            let cartItemsArray = JSON.parse(cartItems) as CartItem[];
-            cartItemsArray = cartItemsArray
-                .map((item) =>
-                    item.id === id
-                        ? { ...item, quantity: item.quantity - 1 }
-                        : item
-                )
-                .filter((item) => item.quantity > 0);
-
-            localStorage.setItem(cartKey, JSON.stringify(cartItemsArray));
-            setItemsCount(cartItemsCount());
-        } catch (error) {
-            console.error("Failed to remove item from cart", error);
+        if (isLoggedIn) {
+            const item = dbCartItems.find((i) => i.id === id);
+            if (!item) return;
+            const newQty = item.quantity - 1;
+            setIsLoading(true);
+            try {
+                const res = await fetch('/api/cart', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ productId: id, quantity: newQty }),
+                });
+                const data = await res.json();
+                setDbCartItems(data.items ?? []);
+            } catch (e) {
+                console.error('Remove from cart error:', e);
+            } finally {
+                setIsLoading(false);
+            }
+            return;
         }
-    };
 
+        const localItems = getLocalItems();
+        const next = localItems
+            .map((i) => i.id === id ? { ...i, quantity: i.quantity - 1 } : i)
+            .filter((i) => i.quantity > 0);
+        localStorage.setItem(cartKey, JSON.stringify(next));
+        setLocalVersion((v) => v + 1);
+    }, [isLoggedIn, dbCartItems, getLocalItems]);
 
-    const handleRemoveItem = (id: string) => {
+    const handleRemoveItem = useCallback(async (id: string) => {
         if (typeof window === "undefined") return;
-        const cartItems = localStorage.getItem(cartKey);
-        if (!cartItems) return;
-        try {
-            let cartItemsArray = JSON.parse(cartItems) as CartItem[];
-            cartItemsArray = cartItemsArray.filter((item) => item.id !== id);
-            localStorage.setItem(cartKey, JSON.stringify(cartItemsArray));
-            setItemsCount(cartItemsCount());
-        } catch (error) {
-            console.error("Failed to remove item from cart", error);
-        }
-    }
 
+        if (isLoggedIn) {
+            setIsLoading(true);
+            try {
+                const res = await fetch(`/api/cart?productId=${encodeURIComponent(id)}`, { method: 'DELETE' });
+                const data = await res.json();
+                setDbCartItems(data.items ?? []);
+            } catch (e) {
+                console.error('Remove item error:', e);
+            } finally {
+                setIsLoading(false);
+            }
+            return;
+        }
+
+        const localItems = getLocalItems().filter((i) => i.id !== id);
+        localStorage.setItem(cartKey, JSON.stringify(localItems));
+        setLocalVersion((v) => v + 1);
+    }, [isLoggedIn, getLocalItems]);
 
     return (
-        <CartContext.Provider value={{ cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart: handleRemoveFromCart, handleRemoveItem: handleRemoveItem }}>
+        <CartContext.Provider value={{ cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart: handleRemoveFromCart, handleRemoveItem: handleRemoveItem, isLoading }}>
             {children}
         </CartContext.Provider>
     )

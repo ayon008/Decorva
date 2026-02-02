@@ -104,10 +104,10 @@ const NavBar = () => {
                                 <Link href={"/shop"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/shop" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Shop</Link>
                             </li>
                             <li>
-                                <Link href={"/indoor-plants"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/indoor-plants" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Indoor Plants</Link>
+                                <Link href={"/shop/indoor-plants"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/shop/indoor-plants" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Indoor Plants</Link>
                             </li>
                             <li>
-                                <Link href={"/outdoor-plants"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/outdoor-plants" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Outdoor Plants</Link>
+                                <Link href={"/shop/outdoor-plants"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/shop/outdoor-plants" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Outdoor Plants</Link>
                             </li>
                             <li>
                                 <Link href={"/blog"} className={`pb-6 border-b-3 transition-all duration-300 text-sm ${pathname === "/blog" ? "border-b-primary text-primary" : "border-b-transparent hover:border-b-primary"}`}>Blog</Link>

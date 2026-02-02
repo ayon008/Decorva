@@ -6,6 +6,7 @@ import {
   ChartBar,
   CreditCard,
   Home,
+  Image,
   Package,
   Package2,
   Settings,
@@ -34,6 +35,14 @@ export default function SidebarNav() {
       >
         <Home className="w-4 h-4" />
         <span className="text-base leading-[110%]">Home</span>
+      </Link>
+
+      <Link
+        className={`${baseLink} hover:bg-[#6F9805] ${isActive("/dashboard/media-files") ? activeLink : ""}`}
+        href={"/dashboard/media-files"}
+      >
+        <Image className="w-4 h-4" />
+        <span className="text-base leading-[110%]">Media Files</span>
       </Link>
 
       <div>

@@ -36,16 +36,14 @@ const SideCart = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void })
 
     const [shouldRender, setShouldRender] = useState(false);
 
-    // Add this useEffect
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         if (isOpen) {
             setShouldRender(true);
         }
     }, [isOpen]);
 
-    const loading = false;
-
-    const { getCartItems, itemsCount } = useCart();
+    const { getCartItems, itemsCount, isLoading } = useCart();
     const cartItems = getCartItems();
 
     const sideCartRef = useRef(null);
@@ -99,22 +97,20 @@ const SideCart = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void })
                 {/* Content */}
                 <div className='max-h-[calc(100vh-195px)] min-h-[calc(100vh-195px)] overflow-y-scroll p-5 scroll-bar'>
                     {
-                        loading ? (
+                        isLoading ? (
                             <div className='space-y-5'>
+                                <CartItemSkeleton />
+                                <CartItemSkeleton />
                                 <CartItemSkeleton />
                                 <CartItemSkeleton />
                             </div>
                         ) : (
                             <div className='space-y-5'>
                                 {[...cartItems].reverse().map((item, index) => {
-                                    console.log(item, 'itemFromSideCart');
-
                                     return (
                                         <SideCartItems
                                             key={item.id || index}
                                             item={item}
-                                        // onUpdateQuantity={handleUpdateCartItem}
-                                        // onRemove={handleRemoveCartItem}
                                         />
                                     )
                                 })}

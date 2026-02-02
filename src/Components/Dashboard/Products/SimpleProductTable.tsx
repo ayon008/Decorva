@@ -103,36 +103,24 @@ const SimpleProductTable = ({ setSampleProductData, defaultProductData }: { setS
                 </div>
             </div>
             <div className='w-[70%] pl-2'>
-                {
-                    activeTab === 0 && <>
-                        <General setGeneralData={setGeneralData} defaultData={defaultData.general} />
-                    </>
-                }
-                {
-                    activeTab === 1 && <>
-                        <Inventory setInventoryData={setInventoryData} defaultData={defaultData.inventory} />
-                    </>
-                }
-                {
-                    activeTab === 2 && <>
-                        <Shipping setShippingData={setShippingData} defaultData={defaultData.shipping} />
-                    </>
-                }
-                {
-                    activeTab === 3 && <>
-                        <LinkedProducts setLinkedProductsData={setLinkedProductsData} />
-                    </>
-                }
-                {
-                    activeTab === 4 && <>
-                        <Attributes setAttributesData={setAttributesData} />
-                    </>
-                }
-                {
-                    activeTab === 5 && <>
-                        <Advanced setAdvancedData={setAdvancedData} defaultData={defaultData.advanced} />
-                    </>
-                }
+                <div style={{ display: activeTab === 0 ? 'block' : 'none' }}>
+                    <General setGeneralData={setGeneralData} defaultData={defaultData.general} />
+                </div>
+                <div style={{ display: activeTab === 1 ? 'block' : 'none' }}>
+                    <Inventory setInventoryData={setInventoryData} defaultData={defaultData.inventory} />
+                </div>
+                <div style={{ display: activeTab === 2 ? 'block' : 'none' }}>
+                    <Shipping setShippingData={setShippingData} defaultData={defaultData.shipping} />
+                </div>
+                <div style={{ display: activeTab === 3 ? 'block' : 'none' }}>
+                    <LinkedProducts setLinkedProductsData={setLinkedProductsData} />
+                </div>
+                <div style={{ display: activeTab === 4 ? 'block' : 'none' }}>
+                    <Attributes setAttributesData={setAttributesData} />
+                </div>
+                <div style={{ display: activeTab === 5 ? 'block' : 'none' }}>
+                    <Advanced setAdvancedData={setAdvancedData} defaultData={defaultData.advanced} />
+                </div>
             </div>
         </>
     )

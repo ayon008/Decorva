@@ -30,7 +30,7 @@ const MyAccountPage = () => {
 
     const id = session?.user?.id;
 
-    const { data: user, isLoading } = useQuery({
+    const { data: user = {}, isLoading } = useQuery({
         queryKey: ['user', id],
         queryFn: async () => {
             const response = await fetch(`/api/user/${id}`);
@@ -42,11 +42,6 @@ const MyAccountPage = () => {
         },
         enabled: !!id
     });
-
-
-    if (isLoading || !user) {
-        return <div>Loading...</div>;
-    }
 
     return (
         <div>
@@ -61,7 +56,7 @@ const MyAccountPage = () => {
                             <li onClick={() => handleLogOut()} className={`text-white py-3 px-4 rounded-sm font-medium cursor-pointer hover:bg-primary transition-all duration-200 ease-in ${activeIndex === 3 ? 'bg-primary' : 'bg-[#222222]'}`}>Logout</li>
                         </ul>
                     </div>
-                    <div className='flex-1'>
+                    <div className={`flex-1 ${isLoading || !user ? 'opacity-0' : 'opacity-100'}`}>
                         {activeIndex === 0 && <Information data={user as User} />}
                         {activeIndex === 1 && <Orders />}
                         {activeIndex === 2 && <ForgotPass />}

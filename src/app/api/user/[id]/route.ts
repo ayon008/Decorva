@@ -33,6 +33,19 @@ export async function GET(request: Request,
                 createdAt: true,
                 updatedAt: true,
                 lastLogin: true,
+                cart: {
+                    select: {
+                        items: {
+                            select: {
+                                productId: true,
+                                quantity: true,
+                                price: true,
+                                image: true,
+                                name: true,
+                            }
+                        }
+                    }
+                },
                 lastOrderDate: true,
                 billingAddress: true,  // This will include all fields from billingAddress
                 shippingAddress: true, // This will include all fields from shippingAddress

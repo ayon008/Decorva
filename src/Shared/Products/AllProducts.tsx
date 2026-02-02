@@ -5,6 +5,7 @@ import ReactRangeSliderInput from 'react-range-slider-input'
 import 'react-range-slider-input/dist/style.css';
 import { useParams } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
+import ProductLoader from '@/app/(Main)/Loader/ProductLoader';
 
 const AllProducts = () => {
 
@@ -28,7 +29,7 @@ const AllProducts = () => {
         },
         staleTime: 60 * 60 * 1000, // Cache for 1 hour
     })
-    
+
     const { minPrice, maxPrice } = useMemo(() => {
         if (!categoryProducts || categoryProducts.length === 0) {
             return { minPrice: 0, maxPrice: 0 };
@@ -101,16 +102,20 @@ const AllProducts = () => {
     //     );
     // };
 
-    if (isLoading) return <div>Loading...</div>
     if (categoryProducts && categoryProducts.length === 0) return <div>No products found</div>
 
     return (
         <div className='w-full flex items-start justify-between gap-10'>
             <div className='grid 2xl:grid-cols-4 lg:grid-cols-3 md:grid-cols-2 grid-cols-1 items-start w-3/4 gap-6'>
                 {
-                    filteredProducts && filteredProducts.length > 0 && filteredProducts.map((product: { id: string, images: { url: string }[], name: string, price: number, regularPrice: number, salePrice: number, slug: string }) => (
-                        <ProductCard key={product.id} product={product} />
-                    ))
+                    isLoading ?
+                        Array.from({ length: 12 }).map((_, index) => (
+                            <ProductLoader key={index} />
+                        ))
+                        :
+                        filteredProducts && filteredProducts.length > 0 && filteredProducts.map((product: { id: string, images: { url: string }[], name: string, price: number, regularPrice: number, salePrice: number, slug: string }) => (
+                            <ProductCard key={product.id} product={product} />
+                        ))
                 }
             </div>
             <div className='sticky top-[80px] w-1/4 flex flex-col gap-10'>
@@ -125,7 +130,7 @@ const AllProducts = () => {
                                 className='my-dashed-slider'
                             />
                             <div className='text-[14px] leading-[15px] font-semibold mt-4'>
-                                د.إ {priceRange[0].toFixed(2)} — د.إ {priceRange[1].toFixed(2)}
+                                د.إ {priceRange[1].toFixed(2)} — د.إ {priceRange[0].toFixed(2)}
                             </div>
                         </div>
                     )

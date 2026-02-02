@@ -56,6 +56,23 @@ const AddProductPage = () => {
     const [tags, setTags] = useState<string[]>([]);
     const [selectedBrand, setSelectedBrand] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string[]>([]);
+    const [formKey, setFormKey] = useState(0);
+
+    const clearForm = () => {
+        setProductName('');
+        setProductDescription('');
+        setProductShortDescription('');
+        setProductDescriptionHtml('');
+        setProductShortDescriptionHtml('');
+        setSampleProductData(null);
+        setFeaturedImage(null);
+        setGalleryImages([]);
+        setTags([]);
+        setSelectedBrand('');
+        setSelectedCategory([]);
+        setProductType('simple');
+        setFormKey((k) => k + 1);
+    };
 
     const handleProductDescriptionChange = (data: { productDescription: string; productDescriptionHtml: string }) => {
         setProductDescription(data.productDescription)
@@ -66,6 +83,19 @@ const AddProductPage = () => {
         setProductShortDescription(data.productDescription)
         setProductShortDescriptionHtml(data.productDescriptionHtml)
     }
+
+    const searchParams = useSearchParams();
+    const productId = searchParams.get('edit');
+
+    const { data: product } = useQuery({
+        queryKey: ['product', productId],
+        queryFn: async () => {
+            const response = await fetch(`/api/product/${productId}`);
+            const data = await response.json();
+            return data.product;
+        },
+        enabled: !!productId,
+    });
 
     const images = [...galleryImages, featuredImage].filter((image): image is File => image != null);
 
@@ -102,69 +132,63 @@ const AddProductPage = () => {
 
     const handlePublishProduct = async () => {
         Swal.fire({
-            title: 'Publishing product...',
-            text: 'Please wait while we publish the product',
+            title: productId ? 'Updating product...' : 'Publishing product...',
+            text: 'Please wait',
             icon: 'info',
-            confirmButtonText: 'OK',
-        })
-        const imageUrls: string[] = []
+            showConfirmButton: false,
+        });
+        const imageUrls: string[] = [];
+        if (productId && product?.images?.length) {
+            imageUrls.push(...product.images.map((img: { url: string }) => img.url));
+        }
         if (images.length > 0) {
             const results = await Promise.all(
                 images.map(async (file) => {
-                    const formData = new FormData()
-                    formData.append('file', file)
-                    const res = await fetch('/api/upload-image', { method: 'POST', body: formData })
-                    const data = await res.json()
-                    return data?.url ?? null
+                    const formData = new FormData();
+                    formData.append('file', file);
+                    const res = await fetch('/api/upload-image', { method: 'POST', body: formData });
+                    const data = await res.json();
+                    return data?.url ?? null;
                 })
-            )
-            imageUrls.push(...results.filter((url): url is string => url != null))
+            );
+            imageUrls.push(...results.filter((url): url is string => url != null));
         }
 
-        const descriptionHtmlWithImgBB = await uploadHtmlImagesToImgBB(productDescriptionHtml)
-        const shortDescriptionHtmlWithImgBB = await uploadHtmlImagesToImgBB(productShortDescriptionHtml)
+        const descriptionHtmlWithImgBB = await uploadHtmlImagesToImgBB(productDescriptionHtml);
+        const shortDescriptionHtmlWithImgBB = await uploadHtmlImagesToImgBB(productShortDescriptionHtml);
 
         const payload = {
             ...productData,
             descriptionHtml: descriptionHtmlWithImgBB,
             shortDescriptionHtml: shortDescriptionHtmlWithImgBB,
-            images: imageUrls
-        }
-        const res = await fetch('/api/product', {
-            method: 'POST',
+            images: imageUrls,
+        };
+
+        const url = productId ? `/api/product/${productId}` : '/api/product';
+        const method = productId ? 'PATCH' : 'POST';
+        const res = await fetch(url, {
+            method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload),
-        })
-        const data = await res.json()
+        });
+        const data = await res.json();
         if (data.success) {
-            Swal.fire({
-                title: 'Product created successfully',
+            if (!productId) clearForm();
+            await Swal.fire({
+                title: productId ? 'Product updated' : 'Product created successfully',
                 text: data.message,
                 icon: 'success',
                 confirmButtonText: 'OK',
-            })
+            });
         } else {
             Swal.fire({
-                title: 'Product creation failed',
+                title: productId ? 'Update failed' : 'Product creation failed',
                 text: data.message,
                 icon: 'error',
                 confirmButtonText: 'OK',
-            })
+            });
         }
-    }
-
-    const searchParams = useSearchParams();
-    const productId = searchParams.get('edit');
-
-    const { data: product } = useQuery({
-        queryKey: ['product', productId],
-        queryFn: async () => {
-            const response = await fetch(`/api/product/${productId}`);
-            const data = await response.json();
-            return data.product;
-        },
-        enabled: !!productId,
-    });
+    };
 
     // Sync form state when product loads (edit mode). Batched in queueMicrotask to satisfy React Compiler.
     useEffect(() => {
@@ -187,7 +211,7 @@ const AddProductPage = () => {
     return (
         <section className=''>
             <h2 className='text-2xl mb-4'>Add new product</h2>
-            <div className='w-full flex items-start justify-between gap-6'>
+            <div key={formKey} className='w-full flex items-start justify-between gap-6'>
                 <aside className='w-3/4 flex flex-col gap-4'>
                     <input type="text" placeholder='Product name' className='w-full p-2 border border-black/30 rounded-sm' value={productName} onChange={(e) => setProductName(e.target.value)} />
                     <ProductDescription heading="Product Description" height="400px" onChange={handleProductDescriptionChange} defaultContent={productDescriptionHtml} />

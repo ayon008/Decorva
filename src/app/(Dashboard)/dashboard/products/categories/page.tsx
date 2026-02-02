@@ -199,7 +199,7 @@ const CategoriesPage = () => {
                                 ) : categories?.length ? (
                                     categories.map((cat) => (
                                         <tr key={cat.id} className='border-b border-b-black/50 bg-[#F6F7F7]'>
-                                            <td className='p-2 text-left'>{cat.name}</td>
+                                            <td className='p-2 text-left capitalize'>{cat.name}</td>
                                             <td className='p-2 text-left'>{cat.slug}</td>
                                             <td className='p-2 text-left'>{cat.count ?? 0}</td>
                                             <td className='p-2 text-center'>

@@ -1,5 +1,5 @@
 "use client";
-import React, { useContext } from 'react'
+import { useContext } from 'react'
 import { CartContext } from '../Providers/CartPovider';
 
 const useCart = () => {
@@ -7,8 +7,8 @@ const useCart = () => {
     if (!context) {
         throw new Error('useCart must be used within a CartProvider');
     }
-    const { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem } = context;
-    return { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem };
+    const { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, isLoading } = context;
+    return { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, isLoading };
 }
 
 export default useCart;
