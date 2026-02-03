@@ -105,9 +105,9 @@ const CartProvider = ({ children }: { children: React.ReactNode }) => {
         sync();
     }, [isLoggedIn, getLocalItems]);
 
-    const handleAddToCart = useCallback(async (product: CartItem) => {
+    const handleAddToCart = useCallback(async (product: CartItem, open?: true) => {
         if (typeof window === "undefined") return;
-        setCartOpen(true);
+        setCartOpen(open ?? true);
 
         if (isLoggedIn) {
             setIsLoading(true);

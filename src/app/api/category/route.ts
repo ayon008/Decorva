@@ -1,9 +1,11 @@
 import { normalizeSlug } from "@/lib/slug";
 import { prisma } from "@/lib/prisma";
+import { getOrCreateUncategorized } from "@/lib/category";
 import { NextResponse } from "next/server";
 
 export async function GET() {
     try {
+        await getOrCreateUncategorized();
         const categories = await prisma.productCategory.findMany({
             where: {
                 slug: {

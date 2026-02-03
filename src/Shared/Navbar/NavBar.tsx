@@ -31,7 +31,7 @@ const NavBar = () => {
     }, [isCategoriesOpen])
 
 
-    const { data: categories, isLoading } = useQuery({
+    const { data, isLoading } = useQuery({
         queryKey: ['categories'],
         queryFn: async () => {
             const response = await fetch('/api/category');
@@ -39,6 +39,8 @@ const NavBar = () => {
             return data.categories;
         }
     })
+
+    const categories = data?.filter((category: { name: string }) => category?.name !== 'Uncategorized');
 
 
     return (

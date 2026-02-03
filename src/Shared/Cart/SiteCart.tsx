@@ -10,7 +10,7 @@ import { lora } from '../font/Rubik'
 import useCart from '../Hooks/useCart'
 import SideCartItems from './SideCartItem'
 
-const CartItemSkeleton = () => (
+export const CartItemSkeleton = () => (
     <div className='flex items-center gap-8 bg-[#F7F7F7] p-[10px] rounded-sm'>
         <Skeleton className='w-[100px] h-[100px]' />
         <div className='flex flex-col gap-[10px] w-full'>

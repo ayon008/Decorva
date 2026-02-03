@@ -9,7 +9,7 @@ const Products = () => {
 
     const [active, setActive] = useState(0);
 
-    const category = active === 0 ? 'plant-stands-and-movers' : active === 1 ? 'plant-families' : 'outdoor-plant-pots';
+    const category = active === 0 ? 'plant-stands-&-movers' : active === 1 ? 'plant-families' : 'outdoor-plant-pots';
 
     const { data: categoryProducts = [], isLoading } = useQuery({
         queryKey: ['products', category],

@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateUniqueSku } from "@/lib/product";
 import { NextResponse } from "next/server";
 
 function parseDateTime(value: unknown): Date | null {
@@ -23,8 +24,10 @@ export async function POST(req: Request) {
     const saleEnd = parseDateTime(data.saleEnd);
     const { saleStart: _s, saleEnd: _e, images, productBrand, categories, ...rest } = data;
 
-    const sku = data.sku;
-    if (sku) {
+    let sku = typeof data.sku === 'string' ? data.sku.trim() : '';
+    if (!sku) {
+        sku = await generateUniqueSku();
+    } else {
         const existingProduct = await prisma.product.findUnique({
             where: { sku },
         });
@@ -35,6 +38,7 @@ export async function POST(req: Request) {
 
     const payload = {
         ...rest,
+        sku,
         ...(saleStart != null && { saleStart }),
         ...(saleEnd != null && { saleEnd }),
         ...(images?.length > 0 && { images: { create: images.map((url: string, position: number) => ({ url, position })) } }),

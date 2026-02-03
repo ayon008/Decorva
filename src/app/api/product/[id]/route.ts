@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { generateUniqueSku } from "@/lib/product";
 import { NextResponse } from "next/server";
 
 function parseDateTime(value: unknown): Date | null {
@@ -30,15 +31,21 @@ export async function PATCH(request: Request,
             return NextResponse.json({ success: false, message: 'Product not found' }, { status: 404 });
         }
 
-        if (data.sku && data.sku !== existing.sku) {
-            const taken = await prisma.product.findUnique({ where: { sku: data.sku } });
+        let sku = typeof data.sku === 'string' ? data.sku.trim() : '';
+        if (!sku) {
+            sku = await generateUniqueSku();
+        } else if (sku !== existing.sku) {
+            const taken = await prisma.product.findUnique({ where: { sku } });
             if (taken) {
                 return NextResponse.json({ success: false, message: 'SKU already exists' }, { status: 400 });
             }
+        } else {
+            sku = existing.sku;
         }
 
         const updatePayload: Record<string, unknown> = {
             ...rest,
+            sku,
             ...(saleStart != null && { saleStart }),
             ...(saleEnd != null && { saleEnd }),
             ...(productBrand !== undefined && (productBrand ? { productBrand: { connect: { id: productBrand } } } : { productBrand: { disconnect: true } })),

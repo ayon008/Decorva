@@ -43,6 +43,34 @@ enum StockStatus {
   ONBACKORDER
 }
 
+enum OrderStatus {
+  PENDING
+  PROCESSING
+  ON_HOLD
+  COMPLETED
+  CANCELLED
+  REFUNDED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+enum PaymentMethod {
+  CASH_ON_DELIVERY
+  CREDIT_CARD
+  DEBIT_CARD
+  PAYPAL
+  STRIPE
+  BANK_TRANSFER
+  OTHER
+}
+
 model User {
   id                String           @id @default(auto()) @map("_id") @db.ObjectId
   email             String           @unique
@@ -61,9 +89,9 @@ model User {
   shippingAddress   ShippingAddress? @relation(fields: [shippingAddressId], references: [id])
   shippingAddressId String?          @unique @db.ObjectId
 
-  wishlist  WishlistItem[]
-  orders    Order[]
-  reviews   ProductReview[]
+  wishlist WishlistItem[]
+  orders   Order[]
+  reviews  ProductReview[]
 
   // Marketing
   marketingOptIn Boolean? @default(false)
@@ -148,17 +176,104 @@ model Cart {
 }
 
 model Order {
-  id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
-  userId      String   @db.ObjectId
-  orderNumber String   @unique
-  total       Float
-  status      String // e.g., pending, processing, completed
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  user        User          @relation(fields: [userId], references: [id])
+  userId      String        @db.ObjectId
+  orderNumber String        @unique
+  
+  // Order Status
+  status      OrderStatus  @default(PENDING)
+  paymentStatus PaymentStatus @default(PENDING)
+  paymentMethod PaymentMethod?
+  
+  // Billing Information (embedded)
+  billingFirstName String
+  billingLastName  String
+  billingEmail     String
+  billingPhone     String?
+  billingCompany   String?
+  billingAddress1  String
+  billingAddress2  String?
+  billingCity      String
+  billingState     String
+  billingPostcode  String
+  billingCountry   String
+  
+  // Shipping Information (embedded)
+  shippingFirstName String?
+  shippingLastName  String?
+  shippingEmail     String?
+  shippingPhone     String?
+  shippingCompany   String?
+  shippingAddress1  String?
+  shippingAddress2  String?
+  shippingCity      String?
+  shippingState      String?
+  shippingPostcode   String?
+  shippingCountry    String?
+  
+  // Order Items
+  items        OrderItem[]
+  
+  // Pricing Breakdown
+  subtotal     Float       // Sum of all items before taxes and shipping
+  taxAmount    Float       @default(0)
+  shippingCost Float       @default(0)
+  discountAmount Float     @default(0)
+  total        Float       // Final total (subtotal + tax + shipping - discount)
+  
+  // Additional Information
+  orderNotes   String?     // Customer notes
+  adminNotes   String?     // Internal admin notes
+  customerIp   String?     // IP address for fraud detection
+  
+  // Payment Information
+  transactionId String?    // Payment gateway transaction ID
+  paidAt        DateTime?  // When payment was received
+  
+  // Shipping Information
+  trackingNumber String?
+  shippedAt      DateTime?
+  deliveredAt    DateTime?
+  
+  // Timestamps
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([userId])
   @@index([status])
+  @@index([paymentStatus])
+  @@index([createdAt])
+}
+
+model OrderItem {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderId     String   @db.ObjectId
+  
+  // Product Information (snapshot at time of order)
+  productId   String   @db.ObjectId
+  productName String   // Snapshot of product name
+  productSku  String?  // Snapshot of SKU
+  
+  // Variation Information (if applicable)
+  variationId String?  @db.ObjectId
+  variationAttributes String? // JSON string of selected attributes
+  
+  // Pricing (snapshot at time of order)
+  price       Float    // Unit price at time of order
+  quantity    Int      @default(1)
+  subtotal    Float    // price * quantity
+  
+  // Product Image (snapshot)
+  imageUrl    String?
+  
+  // Timestamps
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([orderId])
+  @@index([productId])
 }
 
 model ProductReview {
@@ -382,4 +497,14 @@ model ProductBrand {
   updatedAt   DateTime  @updatedAt
 
   @@index([slug])
+}
+
+model ContactMessage {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  email     String   @unique
+  phone     String
+  message   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

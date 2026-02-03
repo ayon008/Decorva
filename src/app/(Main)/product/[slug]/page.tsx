@@ -70,7 +70,7 @@ const ProductPage = () => {
                         <section className='flex items-start justify-between gap-7 layout global-padding'>
                             <aside className='lg:w-1/2 w-full grid grid-cols-2 gap-2 overflow-hidden rounded-sm border border-[#E1E1E1]'>
                                 {
-                                    images?.map((img: { id: string, url: string }, i: number) => {
+                                    images && images.length > 0 && images.slice(0, 4).map((img: { id: string, url: string }, i: number) => {
                                         return (
                                             <Image onClick={() => { setOpen(true); setDefault_slide(i); setActiveIndex(i) }} key={i} src={img?.url} alt="product" width={285} height={285} className='w-full h-full object-cover aspect-[1] cursor-pointer' />
                                         )

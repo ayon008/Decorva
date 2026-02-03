@@ -38,7 +38,7 @@ const ProductCard = ({ product }: { product: { id: string, images: { url: string
                     <h4 className='text-center text-sm leading-[16px] hover:text-primary transition-all duration-300 text-black'>{product?.name}</h4>
                 </div>
                 <div className='flex items-center justify-center gap-2 mt-4'>
-                    <span className='text-[15px] font-medium leading-[16px] text-primary'>{product?.salePrice}د.إ</span>
+                    <span className='text-[15px] font-medium leading-[16px] text-primary'>{product?.salePrice || product?.regularPrice || product?.price}د.إ</span>
                     {
                         product?.regularPrice && (
                             <span className='text-xs font-normal leading-[100%] line-through text-black'>{product?.regularPrice}د.إ</span>

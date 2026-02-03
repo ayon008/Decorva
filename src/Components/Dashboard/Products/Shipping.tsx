@@ -44,7 +44,7 @@ const Shipping = ({ setShippingData, defaultData }: { setShippingData: (data: Sh
             <div className='flex items-center gap-6'>
                 <label htmlFor="shipping" className='text-xs'>Weight (Kg)</label>
                 <div className='flex items-center gap-2 w-full max-w-[300px] ml-auto'>
-                    <input type='number' id='weight' placeholder='Weight' className='border px-2 py-1 border-black/30 rounded-sm w-full' value={weight} onChange={(e) => setWeight(e.target.value)} />
+                    <input min={0} type='number' id='weight' placeholder='Weight' className='border px-2 py-1 border-black/30 rounded-sm w-full' value={weight} onChange={(e) => setWeight(e.target.value)} />
                 </div>
             </div>
             <div className='flex items-center gap-6'>

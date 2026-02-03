@@ -131,6 +131,34 @@ const AddProductPage = () => {
 
 
     const handlePublishProduct = async () => {
+        if (productType === 'simple') {
+            const regularPrice = sampleProductData?.general?.regularPrice;
+            const priceNum = regularPrice != null && regularPrice !== '' ? Number(regularPrice) : NaN;
+            if (!regularPrice || regularPrice === '' || Number.isNaN(priceNum) || priceNum < 0) {
+                await Swal.fire({
+                    title: 'Validation',
+                    text: 'Regular price is required and must be a valid number.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK',
+                });
+                return;
+            }
+        }
+        const startDate = sampleProductData?.general?.startDate;
+        const endDate = sampleProductData?.general?.endDate;
+        if (startDate && endDate) {
+            const startTime = new Date(startDate).getTime();
+            const endTime = new Date(endDate).getTime();
+            if (!Number.isNaN(startTime) && !Number.isNaN(endTime) && endTime < startTime) {
+                await Swal.fire({
+                    title: 'Validation',
+                    text: 'End date cannot be earlier than start date.',
+                    icon: 'warning',
+                    confirmButtonText: 'OK',
+                });
+                return;
+            }
+        }
         Swal.fire({
             title: productId ? 'Updating product...' : 'Publishing product...',
             text: 'Please wait',

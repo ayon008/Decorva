@@ -205,7 +205,9 @@ const CategoriesPage = () => {
                                             <td className='p-2 text-center'>
                                                 <div className='flex items-center justify-center gap-2'>
                                                     <Edit onClick={() => openEdit(cat)} className='w-4 h-4 cursor-pointer hover:text-primary transition-all duration-200' aria-label={`Edit ${cat.name}`} />
-                                                    <Trash onClick={() => handleDelete(cat)} className='w-4 h-4 cursor-pointer hover:text-primary transition-all duration-200' aria-label={`Delete ${cat.name}`} />
+                                                    {cat.slug !== 'uncategorized' && (
+                                                        <Trash onClick={() => handleDelete(cat)} className='w-4 h-4 cursor-pointer hover:text-primary transition-all duration-200' aria-label={`Delete ${cat.name}`} />
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

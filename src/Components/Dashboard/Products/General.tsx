@@ -32,6 +32,10 @@ const General = ({ setGeneralData, defaultData }: { setGeneralData: (data: Gener
     const toDateTimeISO = (value: string) =>
         value ? new Date(value).toISOString() : ''
 
+    const startTime = startDate ? new Date(startDate).getTime() : 0
+    const endTime = endDate ? new Date(endDate).getTime() : 0
+    const isEndBeforeStart = startDate && endDate && !Number.isNaN(startTime) && !Number.isNaN(endTime) && endTime < startTime
+
     useEffect(() => {
         setGeneralData({
             regularPrice,
@@ -44,7 +48,7 @@ const General = ({ setGeneralData, defaultData }: { setGeneralData: (data: Gener
     return (
         <div className='p-3 space-y-4'>
             <div className='flex items-center gap-6'>
-                <label htmlFor="regular-price" className='text-xs'>Regular Price</label>
+                <label htmlFor="regular-price" className='text-xs'>Regular Price <span className='text-red-500'>*</span></label>
                 <input
                     type="text"
                     id="regular-price"
@@ -52,6 +56,7 @@ const General = ({ setGeneralData, defaultData }: { setGeneralData: (data: Gener
                     className='border px-2 py-1 ml-auto border-black/30 rounded-sm max-w-[300px] w-full'
                     value={regularPrice}
                     onChange={(e) => setRegularPrice(e.target.value)}
+                    required
                 />
             </div>
             <div className='flex items-center gap-6'>
@@ -80,10 +85,14 @@ const General = ({ setGeneralData, defaultData }: { setGeneralData: (data: Gener
                             type="datetime-local"
                             id="end-date"
                             aria-label="Sale end date and time"
-                            className='border px-2 py-1 border-black/30 rounded-sm w-full'
+                            className={`border px-2 py-1 rounded-sm w-full ${isEndBeforeStart ? 'border-red-500' : 'border-black/30'}`}
                             value={endDate.includes('T') ? endDate.slice(0, 16) : endDate}
                             onChange={(e) => setEndDate(e.target.value)}
+                            min={startDate || undefined}
                         />
+                        {isEndBeforeStart && (
+                            <p className='text-red-500 text-xs'>End date cannot be earlier than start date.</p>
+                        )}
                     </div>
                 )
             }
