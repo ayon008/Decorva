@@ -7,6 +7,20 @@ import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import useCart from '@/Shared/Hooks/useCart'
 
+declare global {
+    interface Window {
+        paypal?: {
+            Buttons: (config: {
+                createOrder: (data: unknown, actions: { order: { create: (order: { purchase_units: Array<{ amount: { value: string; currency_code: string }; description: string }> }) => Promise<string> } }) => Promise<string>;
+                onApprove: (data: { orderID: string }, actions: { order?: { capture: () => Promise<{ id: string; payer: unknown }> } }) => Promise<void>;
+                onError: (err: Error) => void;
+            }) => {
+                render: (container: string) => void;
+            };
+        };
+    }
+}
+
 type CheckoutFormValues = {
     // Billing Details
     billingFirstName: string;
@@ -29,6 +43,8 @@ type CheckoutFormValues = {
     shippingState?: string;
     shippingPostcode?: string;
     shippingCountry?: string;
+    // Payment Method
+    paymentMethod: 'PAYPAL' | 'CASH_ON_DELIVERY' | 'CREDIT_CARD';
     // Order Notes
     orderNotes?: string;
 }
@@ -51,9 +67,10 @@ const Checkout = () => {
         enabled: !!userId,
     });
 
-    const { register, handleSubmit, watch, reset, formState: { errors, isSubmitting } } = useForm<CheckoutFormValues>({
+    const { register, handleSubmit, watch, reset, getValues, formState: { errors, isSubmitting } } = useForm<CheckoutFormValues>({
         defaultValues: {
             shipToDifferentAddress: false,
+            paymentMethod: 'PAYPAL',
         }
     });
 
@@ -89,6 +106,7 @@ const Checkout = () => {
     }, [userData, reset]);
 
     const shipToDifferentAddress = watch('shipToDifferentAddress');
+    const paymentMethod = watch('paymentMethod');
 
     const orderSummary = useMemo(() => {
         const subtotal = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -104,9 +122,104 @@ const Checkout = () => {
         };
     }, [cartItems]);
 
-    const onSubmit: SubmitHandler<CheckoutFormValues> = (data) => {
-        console.log(data);
+    const onSubmit: SubmitHandler<CheckoutFormValues> = async (data) => {
+        if (paymentMethod === 'PAYPAL') {
+            return; // PayPal handles submission separately
+        }
+        
+        // Handle other payment methods
+        console.log('Order data:', {
+            ...data,
+            items: cartItems,
+            total: orderSummary.total,
+        });
+        
+        // TODO: Create order via API
     }
+
+    // PayPal Integration
+    useEffect(() => {
+        if (paymentMethod !== 'PAYPAL' || cartItems.length === 0) {
+            const paypalContainer = document.getElementById('paypal-button-container');
+            if (paypalContainer) {
+                paypalContainer.innerHTML = '';
+            }
+            return;
+        }
+
+        const script = document.createElement('script');
+        script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'YOUR_CLIENT_ID'}&currency=USD`;
+        script.async = true;
+        
+        const currentTotal = orderSummary.total;
+        const currentCartItems = [...cartItems];
+        
+        script.onload = () => {
+            if (window.paypal) {
+                window.paypal.Buttons({
+                    createOrder: (data, actions) => {
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: currentTotal.toFixed(2),
+                                    currency_code: 'USD',
+                                },
+                                description: `Order from Decorva - ${currentCartItems.length} item(s)`,
+                            }],
+                        });
+                    },
+                    onApprove: async (data, actions) => {
+                        try {
+                            const order = await actions.order?.capture();
+                            if (order) {
+                                // Handle successful payment
+                                const formData = getValues();
+                                console.log('PayPal payment successful:', {
+                                    orderId: order.id,
+                                    payer: order.payer,
+                                    formData,
+                                    items: currentCartItems,
+                                    total: currentTotal,
+                                });
+                                
+                                // TODO: Create order via API with PayPal transaction ID
+                                // await fetch('/api/orders', {
+                                //     method: 'POST',
+                                //     headers: { 'Content-Type': 'application/json' },
+                                //     body: JSON.stringify({
+                                //         ...formData,
+                                //         paymentMethod: 'PAYPAL',
+                                //         transactionId: order.id,
+                                //         items: currentCartItems,
+                                //         total: currentTotal,
+                                //     }),
+                                // });
+                            }
+                        } catch (error) {
+                            console.error('PayPal error:', error);
+                        }
+                    },
+                    onError: (err) => {
+                        console.error('PayPal error:', err);
+                    },
+                }).render('#paypal-button-container');
+            }
+        };
+
+        document.body.appendChild(script);
+
+        return () => {
+            // Cleanup
+            const paypalContainer = document.getElementById('paypal-button-container');
+            if (paypalContainer) {
+                paypalContainer.innerHTML = '';
+            }
+            if (document.body.contains(script)) {
+                document.body.removeChild(script);
+            }
+        };
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [paymentMethod, cartItems.length, orderSummary.total]);
     return (
         <div>
             <div className='global-margin'>
@@ -367,6 +480,46 @@ const Checkout = () => {
                             {...register('orderNotes')}
                         />
                     </div>
+                    <div className='mt-6'>
+                        <h3 className='text-lg font-semibold mb-4'>Payment Method</h3>
+                        <div className='flex flex-col gap-3'>
+                            <label className='flex items-center gap-3 p-4 border border-[#E1E1E1] rounded-sm cursor-pointer hover:bg-gray-50'>
+                                <input
+                                    type="radio"
+                                    value="PAYPAL"
+                                    {...register('paymentMethod', { required: 'Payment method is required' })}
+                                    className='w-4 h-4'
+                                />
+                                <div className='flex items-center gap-2'>
+                                    <svg className='w-8 h-8' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.417 1.73 1.207 4.3-1.004 6.434-1.623 1.574-3.97 2.12-5.876 2.12h-2.876c-.748 0-1.127.593-1.24 1.002L9.76 20.037a.641.641 0 0 1-.633.74l-2.05.56z" fill="#0070BA"/>
+                                        <path d="M9.46 7.6c.105-1.477 1.31-2.723 2.84-2.723h5.66c.748 0 1.127.593 1.24 1.002l1.582 11.238a.641.641 0 0 1-.633.74h-3.782c-.748 0-1.127-.593-1.24-1.002L9.46 7.6z" fill="#001C64"/>
+                                        <path d="M19.61 5.153h-1.24c-.748 0-1.127.593-1.24 1.002l-.72 5.11c-.105.748.448 1.41 1.196 1.41h.84l.72-5.11c.105-.41.485-1.002 1.233-1.002h.03c.748 0 1.127-.593 1.24-1.002.105-.41-.485-1.002-1.233-1.002z" fill="#0070BA"/>
+                                    </svg>
+                                    <span className='text-sm font-medium'>PayPal</span>
+                                </div>
+                            </label>
+                            <label className='flex items-center gap-3 p-4 border border-[#E1E1E1] rounded-sm cursor-pointer hover:bg-gray-50'>
+                                <input
+                                    type="radio"
+                                    value="CASH_ON_DELIVERY"
+                                    {...register('paymentMethod', { required: 'Payment method is required' })}
+                                    className='w-4 h-4'
+                                />
+                                <span className='text-sm font-medium'>Cash on Delivery</span>
+                            </label>
+                            <label className='flex items-center gap-3 p-4 border border-[#E1E1E1] rounded-sm cursor-pointer hover:bg-gray-50'>
+                                <input
+                                    type="radio"
+                                    value="CREDIT_CARD"
+                                    {...register('paymentMethod', { required: 'Payment method is required' })}
+                                    className='w-4 h-4'
+                                />
+                                <span className='text-sm font-medium'>Credit/Debit Card</span>
+                            </label>
+                        </div>
+                        {errors.paymentMethod && <p className='text-xs text-red-500 mt-2'>{errors.paymentMethod.message}</p>}
+                    </div>
                 </div>
                 <div className='flex-1'>
                     <div className='py-3 px-4 text-white uppercase text-base font-medium bg-[#222222]'>
@@ -420,13 +573,17 @@ const Checkout = () => {
                                 </table>
                             </>
                         )}
-                        <button
-                            type="submit"
-                            disabled={isSubmitting}
-                            className='bg-primary text-white px-4 py-2 rounded-sm cursor-pointer active:scale-[0.98] transition-all duration-300 w-fit mt-4 block disabled:opacity-50 disabled:cursor-not-allowed'
-                        >
-                            {isSubmitting ? 'Placing Order...' : 'Place Order'}
-                        </button>
+                        {paymentMethod === 'PAYPAL' ? (
+                            <div id="paypal-button-container" className='mt-4'></div>
+                        ) : (
+                            <button
+                                type="submit"
+                                disabled={isSubmitting || cartItems.length === 0}
+                                className='bg-primary text-white px-4 py-2 rounded-sm cursor-pointer active:scale-[0.98] transition-all duration-300 w-full mt-4 block disabled:opacity-50 disabled:cursor-not-allowed'
+                            >
+                                {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                            </button>
+                        )}
                     </div>
                 </div>
             </form>
