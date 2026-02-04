@@ -6,6 +6,7 @@ import { useForm, SubmitHandler } from 'react-hook-form'
 import { useSession } from 'next-auth/react'
 import { useQuery } from '@tanstack/react-query'
 import useCart from '@/Shared/Hooks/useCart'
+import Swal from 'sweetalert2'
 
 declare global {
     interface Window {
@@ -52,8 +53,8 @@ type CheckoutFormValues = {
 const Checkout = () => {
     const { data: session } = useSession();
     const userId = session?.user?.id;
-    const { getCartItems } = useCart();
-    
+    const { getCartItems, clearCart } = useCart();
+
     const cartItems = getCartItems();
 
     const { data: userData } = useQuery({
@@ -78,7 +79,7 @@ const Checkout = () => {
         if (userData) {
             const billing = userData.billingAddress;
             const shipping = userData.shippingAddress;
-            
+
             reset({
                 shipToDifferentAddress: false,
                 // Billing defaults
@@ -113,7 +114,7 @@ const Checkout = () => {
         const shippingCost = 10; // Fixed shipping cost, can be made dynamic
         const taxAmount = subtotal * 0.05; // 5% tax, can be made dynamic
         const total = subtotal + shippingCost + taxAmount;
-        
+
         return {
             subtotal,
             shippingCost,
@@ -126,15 +127,67 @@ const Checkout = () => {
         if (paymentMethod === 'PAYPAL') {
             return; // PayPal handles submission separately
         }
-        
-        // Handle other payment methods
-        console.log('Order data:', {
-            ...data,
-            items: cartItems,
-            total: orderSummary.total,
-        });
-        
-        // TODO: Create order via API
+
+        try {
+            const response = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    billingFirstName: data.billingFirstName,
+                    billingLastName: data.billingLastName,
+                    billingEmail: data.billingEmail,
+                    billingPhone: data.billingPhone,
+                    billingAddress1: data.billingAddress,
+                    billingCity: data.billingCity,
+                    billingState: data.billingState,
+                    billingPostcode: data.billingPostcode,
+                    billingCountry: data.billingCountry,
+                    shippingFirstName: data.shipToDifferentAddress ? data.shippingFirstName : undefined,
+                    shippingLastName: data.shipToDifferentAddress ? data.shippingLastName : undefined,
+                    shippingEmail: data.shipToDifferentAddress ? data.shippingEmail : undefined,
+                    shippingPhone: data.shipToDifferentAddress ? data.shippingPhone : undefined,
+                    shippingAddress1: data.shipToDifferentAddress ? data.shippingAddress : undefined,
+                    shippingCity: data.shipToDifferentAddress ? data.shippingCity : undefined,
+                    shippingState: data.shipToDifferentAddress ? data.shippingState : undefined,
+                    shippingPostcode: data.shipToDifferentAddress ? data.shippingPostcode : undefined,
+                    shippingCountry: data.shipToDifferentAddress ? data.shippingCountry : undefined,
+                    paymentMethod: paymentMethod,
+                    items: cartItems.map(item => ({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        quantity: item.quantity,
+                        image: item.image,
+                    })),
+                    subtotal: orderSummary.subtotal,
+                    taxAmount: orderSummary.taxAmount,
+                    shippingCost: orderSummary.shippingCost,
+                    discountAmount: 0,
+                    total: orderSummary.total,
+                    orderNotes: data.orderNotes,
+                }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                await clearCart();
+                Swal.fire({
+                    title: 'Success',
+                    text: 'Order created successfully',
+                    icon: 'success',
+                    showConfirmButton: false,
+                    timer: 2000,
+                });
+
+                window.location.href = `/my-account?order=true`;
+            } else {
+                alert(result.message || 'Failed to create order. Please try again.');
+            }
+        } catch (error) {
+            console.error('Order submission error:', error);
+            alert('An error occurred. Please try again.');
+        }
     }
 
     // PayPal Integration
@@ -148,12 +201,12 @@ const Checkout = () => {
         }
 
         const script = document.createElement('script');
-        script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || 'YOUR_CLIENT_ID'}&currency=USD`;
+        script.src = `https://www.paypal.com/sdk/js?client-id=${process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID}&currency=USD`;
         script.async = true;
-        
+
         const currentTotal = orderSummary.total;
         const currentCartItems = [...cartItems];
-        
+
         script.onload = () => {
             if (window.paypal) {
                 window.paypal.Buttons({
@@ -174,29 +227,69 @@ const Checkout = () => {
                             if (order) {
                                 // Handle successful payment
                                 const formData = getValues();
-                                console.log('PayPal payment successful:', {
-                                    orderId: order.id,
-                                    payer: order.payer,
-                                    formData,
-                                    items: currentCartItems,
-                                    total: currentTotal,
+
+                                // Create order via API with PayPal transaction ID
+                                const response = await fetch('/api/orders', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        billingFirstName: formData.billingFirstName,
+                                        billingLastName: formData.billingLastName,
+                                        billingEmail: formData.billingEmail,
+                                        billingPhone: formData.billingPhone,
+                                        billingAddress1: formData.billingAddress,
+                                        billingCity: formData.billingCity,
+                                        billingState: formData.billingState,
+                                        billingPostcode: formData.billingPostcode,
+                                        billingCountry: formData.billingCountry,
+                                        shippingFirstName: formData.shipToDifferentAddress ? formData.shippingFirstName : undefined,
+                                        shippingLastName: formData.shipToDifferentAddress ? formData.shippingLastName : undefined,
+                                        shippingEmail: formData.shipToDifferentAddress ? formData.shippingEmail : undefined,
+                                        shippingPhone: formData.shipToDifferentAddress ? formData.shippingPhone : undefined,
+                                        shippingAddress1: formData.shipToDifferentAddress ? formData.shippingAddress : undefined,
+                                        shippingCity: formData.shipToDifferentAddress ? formData.shippingCity : undefined,
+                                        shippingState: formData.shipToDifferentAddress ? formData.shippingState : undefined,
+                                        shippingPostcode: formData.shipToDifferentAddress ? formData.shippingPostcode : undefined,
+                                        shippingCountry: formData.shipToDifferentAddress ? formData.shippingCountry : undefined,
+                                        paymentMethod: 'PAYPAL',
+                                        transactionId: order.id,
+                                        items: currentCartItems.map(item => ({
+                                            id: item.id,
+                                            name: item.name,
+                                            price: item.price,
+                                            quantity: item.quantity,
+                                            image: item.image,
+                                        })),
+                                        subtotal: orderSummary.subtotal,
+                                        taxAmount: orderSummary.taxAmount,
+                                        shippingCost: orderSummary.shippingCost,
+                                        discountAmount: 0,
+                                        total: currentTotal,
+                                        orderNotes: formData.orderNotes,
+                                    }),
                                 });
-                                
-                                // TODO: Create order via API with PayPal transaction ID
-                                // await fetch('/api/orders', {
-                                //     method: 'POST',
-                                //     headers: { 'Content-Type': 'application/json' },
-                                //     body: JSON.stringify({
-                                //         ...formData,
-                                //         paymentMethod: 'PAYPAL',
-                                //         transactionId: order.id,
-                                //         items: currentCartItems,
-                                //         total: currentTotal,
-                                //     }),
-                                // });
+
+                                const result = await response.json();
+
+                                if (result.success) {
+                                    await clearCart();
+                                    // Redirect to success page or show success message
+                                    Swal.fire({
+                                        title: 'Success',
+                                        text: 'Order created successfully',
+                                        icon: 'success',
+                                        showConfirmButton: false,
+                                        timer: 2000,
+                                    });
+                                    window.location.href = `/my-account?order=true`;
+                                } else {
+                                    console.error('Order creation failed:', result.message);
+                                    alert('Payment successful but order creation failed. Please contact support.');
+                                }
                             }
                         } catch (error) {
                             console.error('PayPal error:', error);
+                            alert('An error occurred during payment processing. Please try again.');
                         }
                     },
                     onError: (err) => {
@@ -492,9 +585,9 @@ const Checkout = () => {
                                 />
                                 <div className='flex items-center gap-2'>
                                     <svg className='w-8 h-8' viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.417 1.73 1.207 4.3-1.004 6.434-1.623 1.574-3.97 2.12-5.876 2.12h-2.876c-.748 0-1.127.593-1.24 1.002L9.76 20.037a.641.641 0 0 1-.633.74l-2.05.56z" fill="#0070BA"/>
-                                        <path d="M9.46 7.6c.105-1.477 1.31-2.723 2.84-2.723h5.66c.748 0 1.127.593 1.24 1.002l1.582 11.238a.641.641 0 0 1-.633.74h-3.782c-.748 0-1.127-.593-1.24-1.002L9.46 7.6z" fill="#001C64"/>
-                                        <path d="M19.61 5.153h-1.24c-.748 0-1.127.593-1.24 1.002l-.72 5.11c-.105.748.448 1.41 1.196 1.41h.84l.72-5.11c.105-.41.485-1.002 1.233-1.002h.03c.748 0 1.127-.593 1.24-1.002.105-.41-.485-1.002-1.233-1.002z" fill="#0070BA"/>
+                                        <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.417 1.73 1.207 4.3-1.004 6.434-1.623 1.574-3.97 2.12-5.876 2.12h-2.876c-.748 0-1.127.593-1.24 1.002L9.76 20.037a.641.641 0 0 1-.633.74l-2.05.56z" fill="#0070BA" />
+                                        <path d="M9.46 7.6c.105-1.477 1.31-2.723 2.84-2.723h5.66c.748 0 1.127.593 1.24 1.002l1.582 11.238a.641.641 0 0 1-.633.74h-3.782c-.748 0-1.127-.593-1.24-1.002L9.46 7.6z" fill="#001C64" />
+                                        <path d="M19.61 5.153h-1.24c-.748 0-1.127.593-1.24 1.002l-.72 5.11c-.105.748.448 1.41 1.196 1.41h.84l.72-5.11c.105-.41.485-1.002 1.233-1.002h.03c.748 0 1.127-.593 1.24-1.002.105-.41-.485-1.002-1.233-1.002z" fill="#0070BA" />
                                     </svg>
                                     <span className='text-sm font-medium'>PayPal</span>
                                 </div>
@@ -507,15 +600,6 @@ const Checkout = () => {
                                     className='w-4 h-4'
                                 />
                                 <span className='text-sm font-medium'>Cash on Delivery</span>
-                            </label>
-                            <label className='flex items-center gap-3 p-4 border border-[#E1E1E1] rounded-sm cursor-pointer hover:bg-gray-50'>
-                                <input
-                                    type="radio"
-                                    value="CREDIT_CARD"
-                                    {...register('paymentMethod', { required: 'Payment method is required' })}
-                                    className='w-4 h-4'
-                                />
-                                <span className='text-sm font-medium'>Credit/Debit Card</span>
                             </label>
                         </div>
                         {errors.paymentMethod && <p className='text-xs text-red-500 mt-2'>{errors.paymentMethod.message}</p>}

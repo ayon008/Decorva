@@ -1,16 +1,18 @@
 'use client'
 import PageTitle from '@/Shared/PageTitle/PageTitle';
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 import Orders from '../../../Shared/Orders/Orders';
 import ForgotPass from '@/Shared/ForgotPassword/ForgotPass';
 import Information from '@/Shared/My-Profile/Information';
 import { signOut, useSession } from "next-auth/react";
 import Swal from 'sweetalert2';
 import { useQuery } from '@tanstack/react-query';
-import { User } from "@prisma/client";
+import type { User } from "@prisma/client";
+import Skeleton from '@/Shared/Loader/Skeleton';
 
 const MyAccountPage = () => {
     const [activeIndex, setActiveIndex] = useState<number>(0);
+    
     const handleLogOut = async () => {
         Swal.fire({
             title: 'Logging out...',
@@ -27,16 +29,15 @@ const MyAccountPage = () => {
     }
 
     const { data: session } = useSession();
-
     const id = session?.user?.id;
 
-    const { data: user = {}, isLoading } = useQuery({
+    const { data: user, isLoading } = useQuery({
         queryKey: ['user', id],
         queryFn: async () => {
             const response = await fetch(`/api/user/${id}`);
             const data = await response.json();
             if (data.success) {
-                return data.data;
+                return data.data as User;
             }
             return null;
         },
@@ -56,10 +57,20 @@ const MyAccountPage = () => {
                             <li onClick={() => handleLogOut()} className={`text-white py-3 px-4 rounded-sm font-medium cursor-pointer hover:bg-primary transition-all duration-200 ease-in ${activeIndex === 3 ? 'bg-primary' : 'bg-[#222222]'}`}>Logout</li>
                         </ul>
                     </div>
-                    <div className={`flex-1 ${isLoading || !user ? 'opacity-0' : 'opacity-100'}`}>
-                        {activeIndex === 0 && <Information data={user as User} />}
-                        {activeIndex === 1 && <Orders />}
-                        {activeIndex === 2 && <ForgotPass />}
+                    <div className="flex-1">
+                        {isLoading ? (
+                            <div className="text-center text-sm text-gray-500 flex flex-col gap-4">
+                                <Skeleton className='h-[40px] w-[50%]' />
+                                <Skeleton className='h-[40px] w-[80%]' />
+                                <Skeleton className='h-[300px] w-full' />
+                            </div>
+                        ) : (
+                            <>
+                                {activeIndex === 0 && user && <Information data={user} />}
+                                {activeIndex === 1 && <Orders />}
+                                {activeIndex === 2 && <ForgotPass />}
+                            </>
+                        )}
                     </div>
                 </div>
             </section>

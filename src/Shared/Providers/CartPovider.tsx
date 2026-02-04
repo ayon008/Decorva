@@ -13,6 +13,7 @@ export const CartContext = createContext<{
     itemsCount: number;
     handleRemoveFromCart: (id: string) => void;
     handleRemoveItem: (id: string) => void;
+    clearCart: () => void;
     isLoading: boolean;
 }>({
     cartOpen: false,
@@ -23,6 +24,7 @@ export const CartContext = createContext<{
     itemsCount: 0,
     handleRemoveFromCart: () => { },
     handleRemoveItem: () => { },
+    clearCart: () => { },
     isLoading: false,
 });
 
@@ -190,8 +192,35 @@ const CartProvider = ({ children }: { children: React.ReactNode }) => {
         setLocalVersion((v) => v + 1);
     }, [isLoggedIn, getLocalItems]);
 
+    const clearCart = useCallback(async () => {
+        if (typeof window === "undefined") return;
+
+        if (isLoggedIn) {
+            setIsLoading(true);
+            try {
+                // Use PATCH with empty items array to clear server cart
+                const res = await fetch('/api/cart', {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ items: [] }),
+                });
+                const data = await res.json();
+                setDbCartItems(data.items ?? []);
+            } catch (e) {
+                console.error('Clear cart error:', e);
+            } finally {
+                setIsLoading(false);
+            }
+            return;
+        }
+
+        // Clear local cart for guests
+        localStorage.removeItem(cartKey);
+        setLocalVersion((v) => v + 1);
+    }, [isLoggedIn]);
+
     return (
-        <CartContext.Provider value={{ cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart: handleRemoveFromCart, handleRemoveItem: handleRemoveItem, isLoading }}>
+        <CartContext.Provider value={{ cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, clearCart, isLoading }}>
             {children}
         </CartContext.Provider>
     )

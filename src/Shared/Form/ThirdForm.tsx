@@ -11,43 +11,44 @@ type UserWithBillingAddress = User & {
 
 const ThirdForm = ({ data: user }: { data: UserWithBillingAddress }) => {
     const [show, setShow] = useState<boolean>(false);
+    const { billingAddress } = user;
 
+    console.log(billingAddress);
 
-    console.log(user);
 
     // 1️⃣ Setup React Hook Form
     const { register, handleSubmit, reset, formState: { errors } } = useForm<BillingAddress>({
         defaultValues: {
-            firstName: user?.billingAddress?.firstName || user?.firstName || '',
-            lastName: user?.billingAddress?.lastName || user?.lastName || '',
-            address1: user?.billingAddress?.address1 || '',
-            address2: user?.billingAddress?.address2 || '',
-            city: user?.billingAddress?.city || '',
-            state: user?.billingAddress?.state || '',
-            postcode: user?.billingAddress?.postcode || '',
-            country: user?.billingAddress?.country || '',
-            phone: user?.billingAddress?.phone || '',
-            email: user?.billingAddress?.email || '',
+            firstName: billingAddress?.firstName || user?.firstName || '',
+            lastName: billingAddress?.lastName || user?.lastName || '',
+            address1: billingAddress?.address1 || '',
+            address2: billingAddress?.address2 || '',
+            city: billingAddress?.city || '',
+            state: billingAddress?.state || '',
+            postcode: billingAddress?.postcode || '',
+            country: billingAddress?.country || '',
+            phone: billingAddress?.phone || '',
+            email: billingAddress?.email || '',
         },
     });
 
     // Mettre à jour les valeurs du formulaire quand user change
     useEffect(() => {
-        if (user) {
+        if (billingAddress && user) {
             reset({
-                firstName: user?.billingAddress?.firstName || user?.firstName || '',
-                lastName: user?.billingAddress?.lastName || user?.lastName || '',
-                address1: user?.billingAddress?.address1 || '',
-                address2: user?.billingAddress?.address2 || '',
-                city: user?.billingAddress?.city || '',
-                state: user?.billingAddress?.state || '',
-                postcode: user?.billingAddress?.postcode || '',
-                country: user?.billingAddress?.country || '',
-                phone: user?.billingAddress?.phone || '',
-                email: user?.billingAddress?.email || '',
+                firstName: billingAddress?.firstName || user?.firstName || '',
+                lastName: billingAddress?.lastName || user?.lastName || '',
+                address1: billingAddress?.address1 || '',
+                address2: billingAddress?.address2 || '',
+                city: billingAddress?.city || '',
+                state: billingAddress?.state || '',
+                postcode: billingAddress?.postcode || '',
+                country: billingAddress?.country || '',
+                phone: billingAddress?.phone || '',
+                email: billingAddress?.email || '',
             });
         }
-    }, [user, reset]);
+    }, [billingAddress, user, reset]);
 
     // 2️⃣ Submit handler
     const onSubmit: SubmitHandler<BillingAddress> = async (data) => {
@@ -61,7 +62,7 @@ const ThirdForm = ({ data: user }: { data: UserWithBillingAddress }) => {
             showConfirmButton: false,
         });
         try {
-            
+
             const response = await fetch(`/api/user/${user.id}`, {
                 method: 'PATCH',
                 headers: {

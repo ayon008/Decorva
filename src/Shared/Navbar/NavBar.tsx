@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, Search, ShoppingBag, User } from 'lucide-react';
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useGSAP } from '@gsap/react';
 import gsap from 'gsap';
 import SideCart from '../Cart/SiteCart';
@@ -42,6 +42,12 @@ const NavBar = () => {
 
     const categories = data?.filter((category: { name: string }) => category?.name !== 'Uncategorized');
 
+
+    useEffect(() => {
+        setTimeout(() => {
+            setIsCategoriesOpen(false)
+        }, 100)
+    }, [pathname])
 
     return (
         <>

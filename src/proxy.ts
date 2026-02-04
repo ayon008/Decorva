@@ -16,7 +16,9 @@ export default auth(async function proxy(req) {
     const isAdmin = roles.includes("ADMIN");
 
     const pathName = req.nextUrl.pathname;
-    const isProtectedRoute = pathName.startsWith("/my-account");
+    const isProtectedRoute =
+        pathName.startsWith("/my-account") ||
+        pathName.startsWith("/checkout");
     const isAdminRoute =
         pathName === "/dashboard" || pathName.startsWith("/dashboard/");
     // 🔒 Protected routes (auth required)

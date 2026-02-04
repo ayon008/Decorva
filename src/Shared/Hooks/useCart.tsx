@@ -7,8 +7,8 @@ const useCart = () => {
     if (!context) {
         throw new Error('useCart must be used within a CartProvider');
     }
-    const { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, isLoading } = context;
-    return { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, isLoading };
+    const { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, clearCart, isLoading } = context;
+    return { cartOpen, setCartOpen, handleAddToCart, getCartItems, cartItemsCount, itemsCount, handleRemoveFromCart, handleRemoveItem, clearCart, isLoading };
 }
 
 export default useCart;
