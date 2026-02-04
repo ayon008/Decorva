@@ -9,10 +9,13 @@ import Swal from 'sweetalert2';
 import { useQuery } from '@tanstack/react-query';
 import type { User } from "@prisma/client";
 import Skeleton from '@/Shared/Loader/Skeleton';
+import { useSearchParams } from 'next/navigation';
 
 const MyAccountPage = () => {
-    const [activeIndex, setActiveIndex] = useState<number>(0);
-    
+    const searchParams = useSearchParams();
+    const order = searchParams.get('order');
+    const [activeIndex, setActiveIndex] = useState<number>(order ? 1 : 0);
+
     const handleLogOut = async () => {
         Swal.fire({
             title: 'Logging out...',

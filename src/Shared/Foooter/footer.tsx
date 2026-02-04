@@ -20,11 +20,21 @@ const Footer = () => {
                 <div>
                     <h3 className='footer-title'>Information</h3>
                     <ul className='space-y-2'>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>About Us</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Checkout</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Contact</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Frequently Questions</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Wishlist</li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/about"}>About Us</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/shop"}>Shop</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/contact"}>Contact</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/frequently-questions"}>Frequently Questions</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/wishlist"}>Wishlist</Link>
+                        </li>
                     </ul>
                 </div>
                 <div>
@@ -46,11 +56,6 @@ const Footer = () => {
                                     Return
                                 </Link>
                             </li>
-                            <li>
-                                <Link href={"/"} className='inline-block text-sm leading-[30px]'>
-                                    Contact
-                                </Link>
-                            </li>
                         </ul>
                     </div>
                     <div className='flex items-center gap-4 mt-6 justify-center'>
@@ -68,21 +73,35 @@ const Footer = () => {
                 <div>
                     <h3 className='footer-title'>My Account</h3>
                     <ul className='space-y-2'>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>My Account</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Contact</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Shopping cart</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Checkout</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Order History
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/my-account"}>My Account</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/cart"}>Shopping cart</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/checkout"}>Checkout</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/my-account?order=true"}>Order History</Link>
                         </li>
                     </ul>
                 </div>
                 <div>
                     <h3 className='footer-title'>Customer Service</h3>
                     <ul className='space-y-2'>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Contact Us</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Terms & Conditions</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Privacy Policy</li>
-                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>Refund Policy</li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/contact-us"}>Contact Us</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/terms-and-conditions"}>Terms & Conditions</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/privacy-policy"}>Privacy Policy</Link>
+                        </li>
+                        <li className='text-sm leading-[30px] hover:text-primary transition-colors duration-300 text-black'>
+                            <Link href={"/refund-policy"}>Refund Policy</Link>
+                        </li>
                     </ul>
                 </div>
             </div>

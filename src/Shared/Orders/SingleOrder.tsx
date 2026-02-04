@@ -11,8 +11,6 @@ import moment from "moment";
 import { useSession } from 'next-auth/react';
 import Swal from 'sweetalert2';
 
-
-
 const OrderDetails = ({ order, dashboard = false, refetch }: { order: Order & { items: OrderItem[] }, dashboard?: boolean, refetch?: () => void }) => {
     const [isOpen, setIsOpen] = useState(false);
     const orderRef = useRef<HTMLDivElement>(null);
@@ -76,7 +74,7 @@ const OrderDetails = ({ order, dashboard = false, refetch }: { order: Order & { 
     }, [isOpen]);
 
 
-    const [visibleCount, setVisibleCount] = useState(4);
+    const [visibleCount, setVisibleCount] = useState<number>(3);
 
     useEffect(() => {
         const updateVisibleCount = () => {
@@ -85,7 +83,7 @@ const OrderDetails = ({ order, dashboard = false, refetch }: { order: Order & { 
             } else if (window.innerWidth < 1280) {
                 setVisibleCount(2);
             } else {
-                setVisibleCount(4);
+                setVisibleCount(3);
             }
         };
 
@@ -96,7 +94,6 @@ const OrderDetails = ({ order, dashboard = false, refetch }: { order: Order & { 
     }, []);
 
     const remaining = order?.items?.length - visibleCount;
-
     return (
         <div ref={orderRef} className='bg-[#F7F7F7] p-5'>
             <div className='grid md:grid-cols-5 grid-cols-2 gap-2 items-center cursor-pointer' onClick={() => setIsOpen(!isOpen)}>
@@ -311,6 +308,7 @@ const OrderDetails = ({ order, dashboard = false, refetch }: { order: Order & { 
                                                 </div>
                                             </li>
                                         </>
+
                                     )}
                             </ul>
                         </div>

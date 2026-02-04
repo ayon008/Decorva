@@ -45,14 +45,12 @@ export default function SidebarNav() {
             { label: "Add Product", href: "/dashboard/products/add" },
             { label: "Categories", href: "/dashboard/products/categories" },
             { label: "Attributes", href: "/dashboard/products/attributes" },
-            // { label: "Variations", href: "/dashboard/products/variations" },
-            // { label: "Inventory", href: "/dashboard/products/inventory" },
           ]}
         />
       </div>
 
       <div>
-        <Dropdown
+        {/* <Dropdown
           label="Orders"
           icon={<Package2 className="w-4 h-4" />}
           items={[
@@ -63,7 +61,14 @@ export default function SidebarNav() {
             { label: "Completed", href: "/dashboard/orders/completed" },
             { label: "Cancelled / Returned", href: "/dashboard/orders/cancelled" },
           ]}
-        />
+        /> */}
+        <Link
+          className={`${baseLink} hover:bg-[#6F9805] ${isActive("/") ? activeLink : ""}`}
+          href={"/dashboard/orders/all"}
+        >
+          <Package2 className="w-4 h-4" />
+          <span className="text-base leading-[110%]">Orders</span>
+        </Link>
       </div>
 
       <div>
