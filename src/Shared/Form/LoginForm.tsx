@@ -68,16 +68,16 @@ const LoginPage = () => {
     return (
         <div className='w-hull h-dvh flex bg-[#F1FAEC] relative overflow-hidden'>
             <Image src={loginImage} width={1000} height={1000} alt='login-Decorva' className='aspect-auto object-contain absolute left-0 bottom-0 lg:w-[750px] 2xl:w-[1000px]' />
-            <div className='layout global-padding z-10 py-10 flex items-stretch justify-between gap-10'>
-                <div className='w-1/2'>
+            <div className='layout global-padding z-10 py-10 flex md:flex-row flex-col items-stretch justify-between gap-10'>
+                <div className='md:w-1/2 w-full'>
                     <h1 className={`${lora.className} global-h1 text-[#394233]`}>
                         <Link href='/'>Decorva</Link>
                     </h1>
                 </div>
-                <div className='w-1/2 flex flex-col gap-4 my-auto max-w-[500px]'>
+                <div className='md:w-1/2 w-full flex flex-col gap-4 my-auto max-w-[500px] bg-transparent backdrop-blur-[10px] shadow-2xl md:backdrop-blur-none md:shadow-none py-2 px-4 rounded-sm'>
                     <h2 className={`global-h2 ${lora.className} font-semibold!`}>Login</h2>
                     <div className='flex items-center justify-between'>
-                        <p className='text-xl leading-[24px] text-black'>Get access to your account</p>
+                        <p className='md:text-xl text-base leading-[24px] text-black'>Get access to your account</p>
                         <button
                             type='button'
                             onClick={() => router.back()}

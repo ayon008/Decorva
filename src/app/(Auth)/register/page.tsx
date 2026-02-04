@@ -82,16 +82,16 @@ const RegisterPage = () => {
     return (
         <div className='w-hull h-dvh flex bg-[#F1FAEC] relative overflow-hidden'>
             <Image src={loginImage} width={1000} height={1000} alt='login-Decorva' className='aspect-auto object-contain absolute left-0 bottom-0 lg:w-[750px] 2xl:w-[1000px]' />
-            <div className='layout global-padding z-10 py-10 flex items-stretch justify-between gap-10'>
-                <div className='w-1/2'>
+            <div className='layout global-padding z-10 py-10 flex md:flex-row flex-col items-stretch justify-between gap-10'>
+                <div className='md:w-1/2 w-full'>
                     <h1 className={`${lora.className} global-h1 text-[#394233]`}>
                         <Link href='/'>Decorva</Link>
                     </h1>
                 </div>
-                <div className='w-1/2 flex flex-col gap-[14px] my-auto max-w-[500px]'>
+                <div className='md:w-1/2 w-full flex flex-col gap-[14px] my-auto max-w-[500px] bg-transparent backdrop-blur-[10px] shadow-2xl md:backdrop-blur-none md:shadow-none py-2 px-4 rounded-sm'>
                     <h2 className={`global-h2 ${lora.className} font-semibold!`}>Register</h2>
                     <div className='flex items-center justify-between'>
-                        <p className='text-xl leading-[24px] text-black'>Create an account to get started</p>
+                        <p className='md:text-xl text-[15px] leading-[24px] text-black'>Create an account to get started</p>
                         <button
                             type='button'
                             onClick={() => router.back()}
@@ -145,7 +145,7 @@ const RegisterPage = () => {
                         </div>
                         <button className='w-full bg-primary text-white py-3 px-4 rounded-sm transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98]' type='submit'>Register</button>
                     </form>
-                    <p>Already have an account? <Link href='/login' className='text-primary'>Login</Link></p>
+                    <p className='text-center'>Already have an account? <Link href='/login' className='text-primary'>Login</Link></p>
                     <span className='text-center text-base font-medium leading-[24px] text-black'>Or</span>
                     <div onClick={() => signIn('google', { callbackUrl: '/' })} className='flex items-center justify-center gap-2'>
                         <button type='button' className='w-full bg-white text-black py-3 px-4 rounded-sm transition-all duration-300 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.98] flex items-center justify-center gap-2' title='Google'>
