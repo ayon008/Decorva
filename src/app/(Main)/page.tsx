@@ -5,11 +5,10 @@ import Products from "@/Shared/Home/Products";
 import Slider from "@/Shared/Home/Slider";
 import Title from "@/Shared/Title/Title";
 import Offers from '@/Shared/Home/Offers';
+import { getProducts } from "@/lib/product";
 
 export default async function Home() {
-  const products = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/product?featured=true`);
-  const productsData = await products.json();
-  console.log(productsData);
+  const products = await getProducts({ featured: true });
   return (
     <div>
       <Slider />
@@ -24,7 +23,7 @@ export default async function Home() {
       <section className="bg-[#F3F3F3] lg:py-20 py-10">
         <div className="layout global-padding">
           <Title title="Exclusive Deal" className="text-center" />
-          <Offers products={productsData.products ?? []} />
+          <Offers products={products.map((p) => ({ ...p, price: p.price ?? 0, regularPrice: p.regularPrice ?? 0, salePrice: p.salePrice ?? 0 }))} />
         </div>
       </section>
       <div className="lg:my-20 my-10">
