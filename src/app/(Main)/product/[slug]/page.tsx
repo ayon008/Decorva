@@ -16,6 +16,7 @@ import ImageMagnifier from '@/Shared/Products/MagnifyImage';
 import { useQuery } from '@tanstack/react-query';
 import { useParams } from 'next/navigation';
 import useCart from '@/Shared/Hooks/useCart';
+import useWishlist from '@/Shared/Hooks/useWishlist';
 import Skeleton from '@/Shared/Loader/Skeleton';
 
 
@@ -48,6 +49,7 @@ const ProductPage = () => {
     const [default_slide, setDefault_slide] = useState<number>(0);
     const swiperRef = useRef<SwiperType | null>(null);
     const { handleAddToCart } = useCart();
+    const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
     const params = useParams();
     const slug = params.slug;
 
@@ -124,10 +126,29 @@ const ProductPage = () => {
                                 >
                                     Add To Cart
                                 </button>
-                                <div className='flex items-center gap-2'>
-                                    <Heart fill='red' stroke='red' className='w-6 h-6' />
-                                    <span className='text-lg font-medium leading-[16px] text-black'>Add to Wishlist</span>
-                                </div>
+                                <button
+                                    type='button'
+                                    className='flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity'
+                                    onClick={() => {
+                                        const inWishlist = isInWishlist(product?.id);
+                                        if (inWishlist) {
+                                            removeFromWishlist(product.id);
+                                        } else {
+                                            addToWishlist({
+                                                id: product.id,
+                                                name: product.name,
+                                                price: product?.salePrice ?? product?.regularPrice ?? 0,
+                                                image: product?.images?.[0]?.url || '',
+                                                slug: product.slug,
+                                            });
+                                        }
+                                    }}
+                                >
+                                    <Heart className={`w-6 h-6 ${isInWishlist(product?.id) ? 'fill-red-500 text-red-500' : ''}`} stroke={isInWishlist(product?.id) ? 'red' : 'currentColor'} />
+                                    <span className='text-lg font-medium leading-[16px] text-black'>
+                                        {isInWishlist(product?.id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                                    </span>
+                                </button>
                                 {
                                     categories?.length > 0 && (
                                         <div className='flex items-center gap-2'>

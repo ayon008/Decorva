@@ -144,11 +144,13 @@ model ShippingAddress {
 
 model WishlistItem {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @db.ObjectId
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   productId String   @db.ObjectId
   createdAt DateTime @default(now())
 
+  @@unique([userId, productId])
   @@index([userId])
   @@index([productId])
 }
@@ -348,10 +350,11 @@ model Product {
   productBrand    ProductBrand?  @relation(fields: [productBrandId], references: [id])
   productBrandId  String?        @db.ObjectId
 
-  // 
+  //
   enabledReviews Boolean         @default(false)
   purchaseNote   String?
   reviews        ProductReview[]
+  wishlistItems  WishlistItem[]
 
   // Cross-sell and upsell
   crossSellIds String[] @db.ObjectId

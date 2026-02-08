@@ -129,6 +129,10 @@ const CartProvider = ({ children }: { children: React.ReactNode }) => {
             return;
         }
 
+
+        
+
+
         const localItems = getLocalItems();
         const existing = localItems.find((i) => i.id === product.id);
         const next = existing

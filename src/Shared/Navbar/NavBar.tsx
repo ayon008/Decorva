@@ -8,6 +8,7 @@ import gsap from 'gsap';
 import SideCart from '../Cart/SiteCart';
 import { useQuery } from '@tanstack/react-query';
 import useCart from '../Hooks/useCart';
+import useWishlist from '../Hooks/useWishlist';
 import PopUp from '../PopUp/PopUp';
 
 const NavBar = () => {
@@ -22,6 +23,7 @@ const NavBar = () => {
     }
 
     const { cartOpen, setCartOpen, itemsCount: count } = useCart();
+    const { wishlistCount } = useWishlist();
 
 
     useGSAP(() => {
@@ -99,7 +101,14 @@ const NavBar = () => {
                         </div>
                         <div className='flex items-center md:gap-6 gap-4 md:border-r-[#E1E1E1] md:border-l-[#E1E1E1] md:border-l md:border-r md:p-10 p-5 self-stretch'>
                             <Link href={'/login'}><User className='cursor-pointer' /></Link>
-                            <Heart className='cursor-pointer' />
+                            <Link href="/wishlist" className="relative w-fit h-fit">
+                                <Heart className="cursor-pointer" />
+                                {wishlistCount > 0 && (
+                                    <span className="absolute -top-2 -right-[10px] bg-primary flex items-center justify-center text-white text-[10px] py-1 px-2 rounded-full min-w-[18px]">
+                                        {wishlistCount}
+                                    </span>
+                                )}
+                            </Link>
                             <div className='w-fit h-fit relative cursor-pointer' onClick={() => setCartOpen(!cartOpen)}>
                                 <ShoppingBag />
                                 <div className='bg-primary flex items-center justify-center text-white text-[10px] py-1 px-2 rounded-full absolute -top-2 -right-[10px]'>
@@ -196,6 +205,9 @@ const NavBar = () => {
                                 </li>
                                 <li className='pb-2 border-b border-b-[#E1E1E1]'>
                                     <Link href={"/shop/outdoor-plants"} className='capitalize'>Outdoor Plants</Link>
+                                </li>
+                                <li className='pb-2 border-b border-b-[#E1E1E1]'>
+                                    <Link href={"/wishlist"} className='capitalize'>Wishlist</Link>
                                 </li>
                                 <li className='pb-2 border-b border-b-[#E1E1E1]'>
                                     <Link href={"/blog"} className='capitalize'>Blog</Link>

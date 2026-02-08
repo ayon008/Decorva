@@ -1,7 +1,12 @@
-
+import type { Metadata } from "next";
 import PageTitle from '@/Shared/PageTitle/PageTitle';
 import AllProducts from '@/Shared/Products/AllProducts';
 import React from 'react'
+
+export const metadata: Metadata = {
+  title: "Shop",
+  description: "Browse our home decor and furniture catalog. Explore categories and find the perfect pieces for your interior.",
+};
 
 const ShopPage = () => {
     return (
